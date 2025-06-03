@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,10 +10,40 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Github, Mail } from "lucide-react"
+import { useAuth } from "@/lib/useAuth";
 
 export default function AuthPage() {
+
+  const router = useRouter()
+  const { login, signup } = useAuth()
+
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [signupEmail, setSignupEmail] = useState("")
+  const [signupPassword, setSignupPassword] = useState("")
+
   const [activeTab, setActiveTab] = useState("signin")
   const [showPassword, setShowPassword] = useState(false)
+  
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await login(email, password)
+      router.push("/") // redirect to home or dashboard
+    } catch (err: any) {
+      alert(err.message)
+    }
+  }
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await signup(signupEmail, signupPassword)
+      router.push("/") // redirect to home or dashboard
+    } catch (err: any) {
+      alert(err.message)
+    }
+  }
 
   return (
     <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
@@ -58,6 +89,7 @@ export default function AuthPage() {
 
             {/* Sign In Form */}
             <TabsContent value="signin">
+              <form onSubmit={handleSignIn}>
               <Card>
                 <CardHeader>
                   <CardTitle>Sign in to your account</CardTitle>
@@ -66,7 +98,7 @@ export default function AuthPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="name@university.edu" />
+                    <Input  value={email} onChange={(e) => setEmail(e.target.value)} id="email" type="email" placeholder="name@university.edu" />
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -76,7 +108,7 @@ export default function AuthPage() {
                       </Link>
                     </div>
                     <div className="relative">
-                      <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" />
+                      <Input value={password} onChange={(e) => setPassword(e.target.value)} id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" />
                       <Button
                         type="button"
                         variant="ghost"
@@ -104,13 +136,15 @@ export default function AuthPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-500 text-white">Sign In</Button>
+                  <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-blue-500 text-white">Sign In</Button>
                 </CardFooter>
               </Card>
+              </form>
             </TabsContent>
 
             {/* Sign Up Form */}
             <TabsContent value="signup">
+              <form onSubmit={handleSignUp}>
               <Card>
                 <CardHeader>
                   <CardTitle>Create an account</CardTitle>
@@ -133,12 +167,12 @@ export default function AuthPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="name@university.edu" />
+                    <Input value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} id="email" type="email" placeholder="name@university.edu" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="new-password">Password</Label>
                     <div className="relative">
-                      <Input id="new-password" type={showPassword ? "text" : "password"} placeholder="••••••••" />
+                      <Input value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} id="new-password" type={showPassword ? "text" : "password"} placeholder="••••••••" />
                       <Button
                         type="button"
                         variant="ghost"
@@ -182,6 +216,7 @@ export default function AuthPage() {
                   </Button>
                 </CardFooter>
               </Card>
+              </form>
             </TabsContent>
           </Tabs>
 
