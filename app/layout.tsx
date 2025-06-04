@@ -4,6 +4,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { NavigationBar } from "@/components/navigation-bar"
 import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from '@/lib/useAuth';
 
 export const metadata: Metadata = {
   title: "Linkora - Connect, Collaborate, Create",
@@ -19,13 +20,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <AuthProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="relative flex min-h-screen flex-col">
             <NavigationBar />
             <main className="flex-1">{children}</main>
           </div>
           <Toaster />
         </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   )

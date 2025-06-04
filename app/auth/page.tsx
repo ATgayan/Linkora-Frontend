@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Eye, EyeOff, Github, Mail } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/lib/useAuth";
 
 export default function AuthPage() {
@@ -24,6 +24,8 @@ export default function AuthPage() {
 
   const [activeTab, setActiveTab] = useState("signin")
   const [showPassword, setShowPassword] = useState(false)
+
+  const { signInWithGoogle } = useAuth();
   
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -230,7 +232,7 @@ export default function AuthPage() {
           </div>
 
           <div className="flex justify-center">
-            <Button variant="outline" className="w-50% ">
+            <Button onClick={signInWithGoogle} variant="outline" className="w-50% ">
               <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
