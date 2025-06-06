@@ -6,12 +6,11 @@ import {
   signOut,
   onAuthStateChanged,
   signInWithPopup,
-  GoogleAuthProvider,
   User,
   UserCredential,
 } from "firebase/auth";
 import { ReactNode, useContext, useEffect, useState, createContext } from "react";
-import { auth, provider } from "./firebase";
+import { auth } from "./firebase";
 
 // Define context type
 interface AuthContextProps {
@@ -20,7 +19,6 @@ interface AuthContextProps {
   signup: (email: string, password: string) => Promise<UserCredential>;
   login: (email: string, password: string) => Promise<UserCredential>;
   logout: () => Promise<void>;
-  signInWithGoogle: () => Promise<UserCredential | void>;
 }
 
 // Create context with better default values
@@ -58,15 +56,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signInWithGoogle = async (): Promise<UserCredential | void> => {
-    try {
-      return await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Google sign-in error:", error);
-      throw error;
-    }
-  };
-
   // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -83,7 +72,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signup,
     login,
     logout,
-    signInWithGoogle,
   };
 
   return (

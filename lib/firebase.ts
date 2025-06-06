@@ -16,11 +16,3 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase Auth
 export const auth = getAuth(app);
-
-// Initialize Google Auth Provider
-export const provider = new GoogleAuthProvider();
-
-// Optional: Configure Google Auth Provider
-provider.setCustomParameters({
-  prompt: 'select_account'
-});
