@@ -10,7 +10,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login"); // Redirect if not authenticated
+      router.push("/auth"); // Redirect if not authenticated
     }
   }, [user, loading, router]);
 
