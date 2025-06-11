@@ -19,6 +19,7 @@ import {
   ThumbsUpIcon,
   PlusIcon,
 } from "lucide-react"
+import ProtectedRoute from "@/components/ProtectedRoute"
 
 export default function MessagesPage() {
   const [activeChat, setActiveChat] = React.useState(1)
@@ -303,6 +304,7 @@ export default function MessagesPage() {
   }
 
   return (
+    <ProtectedRoute>
     <div className="h-[calc(100vh-3.5rem)] flex bg-background">
       {/* Sidebar */}
       <div className="w-80 border-r border-border flex flex-col bg-card">
@@ -541,5 +543,6 @@ export default function MessagesPage() {
         </div>
       )}
     </div>
+    </ProtectedRoute>
   )
 }

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CheckIcon, SearchIcon, XIcon } from "lucide-react"
 import { UserCard } from "@/components/user-card"
+import ProtectedRoute from "@/components/ProtectedRoute"
 
 export default function SearchPage() {
   const [selectedTags, setSelectedTags] = React.useState<string[]>([])
@@ -126,6 +127,7 @@ export default function SearchPage() {
   }
 
   return (
+    <ProtectedRoute>
     <div className="container py-6 md:py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Discover</h1>
@@ -209,5 +211,6 @@ export default function SearchPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </ProtectedRoute>
   )
 }

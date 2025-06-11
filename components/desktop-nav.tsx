@@ -14,6 +14,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/useAuth"
 
 export function DesktopNav() {
   const pathname = usePathname()
@@ -23,6 +25,19 @@ export function DesktopNav() {
     { href: "/collab", label: "Collaborations", icon: Users },
     { href: "/messages", label: "Messages", icon: MessageSquare },
   ]
+
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+      try {
+        await logout();
+        router.push("/auth"); // Redirect after logout
+      } catch (err) {
+        console.error("Error logging out:", err);
+      }
+    };
+
 
   return (
     <div className="hidden w-full items-center justify-between md:flex">
@@ -67,10 +82,10 @@ export function DesktopNav() {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/auth" className="flex items-center text-red-500">
+              <div onClick={handleLogout} className="flex items-center text-red-500">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log Out</span>
-              </Link>
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import ProtectedRoute from "./components/ProtectedRoute"
 
 // Sample user data
 const userData = {
@@ -75,6 +76,7 @@ export default function ProfileViewEnhanced() {
   }
 
   return (
+    <ProtectedRoute>
     <div className="container mx-auto py-6 px-4 md:px-6">
       {/* Profile Header */}
       <div className="relative mb-8">
@@ -412,5 +414,6 @@ export default function ProfileViewEnhanced() {
         onSave={handleProfileUpdate}
       />
     </div>
+    </ProtectedRoute>
   )
 }
