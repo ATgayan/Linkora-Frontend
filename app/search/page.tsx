@@ -174,8 +174,8 @@ export default function SearchPage() {
       <Tabs defaultValue="people">
         <TabsList className="mb-4">
           <TabsTrigger value="people">People</TabsTrigger>
-          <TabsTrigger value="projects">Projects</TabsTrigger>
-          <TabsTrigger value="universities">Universities</TabsTrigger>
+          <TabsTrigger value="projects">Send Requests</TabsTrigger>
+          <TabsTrigger value="universities">Request</TabsTrigger>
         </TabsList>
         <TabsContent value="people">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
