@@ -43,7 +43,7 @@ export default function SignUpPage() {
 
     setIsSubmitting(true)
 
-    // Simulate API call to create account
+
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // Redirect to pending approval page
