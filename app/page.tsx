@@ -1,5 +1,5 @@
-import ProfileView from "@/profile-view"
+import ProfilePage from "@/app/profile/[username]/page";
 
 export default function Home() {
-  return <ProfileView />
+ return <ProfilePage />;
 }
