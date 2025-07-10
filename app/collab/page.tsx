@@ -11,6 +11,7 @@ import { CollaborationModal } from "@/components/collaboration-modal"
 import { PostCollaborationModal } from "@/components/post-collaboration-modal"
 import { CollaborationDetailModal } from "@/components/collaboration-detail-modal"
 import { Edit, Trash2, Users, Search, Filter } from "lucide-react"
+import ProtectedRoute from "@/components/ProtectedRoute"
 
 export default function CollabPage() {
   const [isPostModalOpen, setIsPostModalOpen] = React.useState(false)
@@ -366,6 +367,7 @@ export default function CollabPage() {
 
   return (
     <>
+    <ProtectedRoute>
       <div className="container py-4 sm:py-6 md:py-8 px-4">
         <div className="mb-4 sm:mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
@@ -545,6 +547,7 @@ export default function CollabPage() {
           setIsCollabModalOpen(true)
         }}
       />
+      </ProtectedRoute>
     </>
   )
 }

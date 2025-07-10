@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import ProtectedRoute from "./components/ProtectedRoute"
 
 // Sample user data
 const userData = {
@@ -75,6 +76,7 @@ export default function ProfileViewEnhanced() {
   }
 
   return (
+    <ProtectedRoute>
     <div className="container mx-auto py-6 px-4 md:px-6">
       {/* Profile Header */}
       <div className="relative mb-8">
@@ -94,7 +96,7 @@ export default function ProfileViewEnhanced() {
             <h1 className="text-3xl font-bold tracking-tight">{user.fullName}</h1>
             <p className="text-muted-foreground">@{user.nickname}</p>
           </div>
-          <div className="flex gap-2 mt-4 md:mt-0 ml-40 md:ml-0">
+          <div className="flex gap-2 mt-4 md:mt-0 ml-40 md:ml-0 z-10">
             <Button variant="outline" size="sm" className="flex items-center gap-1">
               <Share2 className="h-4 w-4" />
               Share
@@ -412,5 +414,6 @@ export default function ProfileViewEnhanced() {
         onSave={handleProfileUpdate}
       />
     </div>
+    </ProtectedRoute>
   )
 }

@@ -10,6 +10,8 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { NotificationDropdown } from "@/components/notification-dropdown"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/useAuth"
+import { useRouter } from "next/navigation"
 
 export function MobileNav() {
   const [open, setOpen] = React.useState(false)
@@ -22,6 +24,18 @@ export function MobileNav() {
     { href: "/profile", label: "Profile", icon: User },
     { href: "/settings", label: "Settings", icon: Settings },
   ]
+
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+      try {
+        await logout();
+        router.push("/auth"); // Redirect after logout
+      } catch (err) {
+        console.error("Error logging out:", err);
+      }
+    };
 
   return (
     <div className="flex w-full items-center justify-between md:hidden">
@@ -57,14 +71,13 @@ export function MobileNav() {
                 </Link>
               ))}
               <Separator />
-              <Link
-                href="/auth"
+              <div
                 className="flex items-center gap-3 py-2 text-sm font-medium text-red-500"
-                onClick={() => setOpen(false)}
+                onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
                 Log Out
-              </Link>
+              </div>
             </div>
           </SheetContent>
         </Sheet>
