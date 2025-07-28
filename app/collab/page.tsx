@@ -304,7 +304,7 @@ export default function CollabPage() {
           {collab.description}
         </CardDescription>
         <div className="mb-3 flex flex-wrap gap-1">
-          {collab.tags.map((tag, index) => (
+          {collab.tags.map((tag: string, index: number) => (
             <Badge key={index} variant="secondary" className="rounded-full text-xs">
               {tag}
             </Badge>
