@@ -1,7 +1,7 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import OtherProfileView from "@/other-profile-view"
+// import OtherProfileView from "@/other-profile-view"
 import ProfileViewEnhanced from "@/profile-view-enhanced"
 
 export default function ProfilePage() {
@@ -12,5 +12,5 @@ export default function ProfilePage() {
   // For demo purposes, we'll just check if there's a username parameter
   const isOwnProfile = !username || username === "me"
 
-  return isOwnProfile ? <ProfileViewEnhanced /> : <OtherProfileView />
+  return isOwnProfile ? <ProfileViewEnhanced /> : null
 }
