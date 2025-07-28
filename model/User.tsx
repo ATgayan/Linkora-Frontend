@@ -1,4 +1,3 @@
-// types/User.ts
 export type User = {
   uid: string
   fullName: string
@@ -19,20 +18,24 @@ export type User = {
   relationshipState?: string
   location?: string
   joinDate?: string
+
   personality?: {
-    hobbies?: string[]
-    talents?: string[]
+    hobbies?: string[] // hobbies = thingsYouLikeToDo
+    talents?: string[] // talents = abilities
   }
+
   professional?: {
     currentJobs?: string
     societyPositions?: string
     workWithPeople?: string
     beAroundPeople?: string
   }
+
   activity?: {
     posts?: number
     collaborations?: number
   }
+
   socialLinks?: {
     github?: string
     linkedin?: string
@@ -41,8 +44,10 @@ export type User = {
     facebook?: string
     personalWebsite?: string
   }
+
   interests?: string
   achievements?: string
-  abilities?: string
-  skills?: string[]
+  abilities?: string[] // changed from string to string[] ✅
+  skills?: string[] // used in filters ✅
+  thingsYouLikeToDo?: string[] // for consistency with hobbies ✅
 }

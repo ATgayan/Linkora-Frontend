@@ -12,18 +12,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { X, Plus, Upload } from "lucide-react";
+import { X, Plus, Upload, Loader2 } from "lucide-react";
+
+import { User } from "./model/User";
+
 
 interface EditProfileDialogProps {
   isOpen: boolean
   onClose: () => void
-  userData: any
+  userData: User
   onSave: (updatedData: any) => void
 }
 
 export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditProfileDialogProps) {
   const [formData, setFormData] = useState({
     ...userData,
+    DegreeCard: userData.degreeCard || "",
+    fullName: userData.fullName || "",
+    profilePicture: userData.profilePicture || "",
+    RelationshipState: userData.relationshipState || "",
     university: userData.university || {},
     personality: userData.personality || {},
     professional: userData.professional || {},
@@ -37,6 +44,7 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
   const [newAbility, setNewAbility] = useState("")
   const [newSkill, setNewSkill] = useState("")
   const [avatarPreview, setAvatarPreview] = useState(userData.profilePicture)
+  const [isSaving, setIsSaving] = useState(false)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData({
@@ -49,7 +57,7 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
     setFormData({
       ...formData,
       [section]: {
-        ...formData[section],
+        ...(formData[section as keyof typeof formData] as object),
         [field]: value,
       },
     })
@@ -106,75 +114,80 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
     })
   }
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const imageUrl = URL.createObjectURL(file)
-      setAvatarPreview(imageUrl)
-      handleInputChange("profilePicture", imageUrl)
-    }
+const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setAvatarPreview(base64String); // preview in UI
+      handleInputChange("profilePicture", base64String); // save base64 string in formData
+    };
+    reader.readAsDataURL(file); // converts to base64
   }
+};
 
   const handleSubmit = async () => {
+    setIsSaving(true)
     try {
+
+      const userPayload: User = {
+        fullName: formData.fullName,
+        degreeCard: formData.DegreeCard,
+        profilePicture: formData.profilePicture,
+        relationshipState: formData.RelationshipState,
+        location: formData.location || "",
+
+        university: {
+          name: formData.university?.name || "",
+          faculty: formData.university?.faculty || "",
+          degree: formData.university?.degree || "",
+          positions: formData.university?.positions || "",
+          universityYear: formData.university?.universityYear || "",
+        },
+
+        personality: {
+          hobbies: formData.thingsYouLikeToDo || [],
+          talents: formData.abilities || [],
+        },
+
+        professional: {
+          currentJobs: formData.professional?.currentJobs || "",
+          societyPositions: formData.professional?.societyPositions || "",
+          workWithPeople: formData.professional?.workWithPeople || "",
+          beAroundPeople: formData.professional?.beAroundPeople || "",
+        },
+
+        socialLinks: {
+          github: formData.socialLinks?.github || "",
+          linkedin: formData.socialLinks?.linkedin || "",
+          twitter: formData.socialLinks?.twitter || "",
+          instagram: formData.socialLinks?.instagram || "",
+          facebook: formData.socialLinks?.facebook || "",
+          personalWebsite: formData.socialLinks?.personalWebsite || "",
+        },
+
+        activity: {
+          posts: formData.activity?.posts || 0,
+          collaborations: formData.activity?.collaborations || 0,
+        },
+
+        whoAmI: formData.whoAmI || "",
+        interests: formData.interests || "",
+        achievements: formData.achievements || "",
+        abilities: formData.abilities || [],
+        skills: formData.skills || [],
+        uid: "",
+        profileCompleteness: 0
+      };
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/update-profile/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", 
-        body: JSON.stringify({
-          DegreeCard: formData.DegreeCard,
-          fullName: formData.fullName,
-          profilePicture: formData.profilePicture,
-          relationshipState: formData.relationshipState,
-          location: formData.location || "",
-
-          university: {
-            name: formData.university?.name || formData.universityName || "",
-            faculty: formData.university?.faculty || formData.facultyName || "",
-            degree: formData.university?.degree || formData.degreeName || "",
-            positions: formData.university?.positions || "",
-          },
-
-          universityName: formData.university?.name || formData.universityName || "",
-          facultyName: formData.university?.faculty || formData.facultyName || "",
-          degreeName: formData.university?.degree || formData.degreeName || "",
-          universityYear: formData.universityYear || "",
-
-          personality: {
-            hobbies: formData.thingsYouLikeToDo || [],
-            talents: formData.abilities || [],
-          },
-
-          professional: {
-            currentJobs: formData.professional?.currentJobs || "",
-            societyPositions: formData.professional?.societyPositions || "",
-            workWithPeople: formData.professional?.workWithPeople || "",
-            beAroundPeople: formData.professional?.beAroundPeople || "",
-          },
-
-          socialLinks: {
-            github: formData.socialLinks?.github || "",
-            linkedin: formData.socialLinks?.linkedin || "",
-            twitter: formData.socialLinks?.twitter || "",
-            instagram: formData.socialLinks?.instagram || "",
-            facebook: formData.socialLinks?.facebook || "",
-            personalWebsite: formData.socialLinks?.personalWebsite || "",
-          },
-
-          activity: {
-            posts: formData.activity?.posts || 0,
-            collaborations: formData.activity?.collaborations || 0,
-            connections: formData.activity?.connections || 0,
-          },
-
-          whoAmI: formData.whoAmI || "",
-          interests: formData.interests || "",
-          achievements: formData.achievements || "",
-          abilities: formData.abilities?.join(", ") || "",
-          skills: formData.skills || [],
-        }),
+        credentials: "include",
+        body: JSON.stringify(userPayload),
       });
 
       const data = await response.json();
@@ -188,6 +201,8 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
     } catch (err: any) {
       console.error("Profile update failed:", err.message);
       alert("Something went wrong while saving. Please try again.");
+    } finally {
+      setIsSaving(false)
     }
   };
 
@@ -276,7 +291,7 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
                 <Label htmlFor="universityName">University Name</Label>
                 <Input
                   id="universityName"
-                  value={formData.university?.name || formData.universityName || ""}
+                  value={formData.university?.name || ""}
                   onChange={(e) => handleNestedInputChange("university", "name", e.target.value)}
                   placeholder="E.g., Stanford University"
                 />
@@ -285,7 +300,7 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
                 <Label htmlFor="facultyName">Faculty Name</Label>
                 <Input
                   id="facultyName"
-                  value={formData.university?.faculty || formData.facultyName || ""}
+                  value={formData.university?.faculty || ""}
                   onChange={(e) => handleNestedInputChange("university", "faculty", e.target.value)}
                   placeholder="E.g., Computer Science"
                 />
@@ -294,7 +309,7 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
                 <Label htmlFor="degreeName">Degree Name</Label>
                 <Input
                   id="degreeName"
-                  value={formData.university?.degree || formData.degreeName || ""}
+                  value={formData.university?.degree || ""}
                   onChange={(e) => handleNestedInputChange("university", "degree", e.target.value)}
                   placeholder="E.g., Bachelor of Science"
                 />
@@ -310,20 +325,20 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
               </div>
               <div className="space-y-2">
                 <Label htmlFor="universityYear">University Year</Label>
-                <Select
-                  value={formData.universityYear || ""}
-                  onValueChange={(value) => handleInputChange("universityYear", value)}
-                >
+                  <Select
+  value={formData.university?.universityYear || ""}
+  onValueChange={(value) => handleNestedInputChange("university", "universityYear", value)}
+>
+
                   <SelectTrigger id="universityYear">
                     <SelectValue placeholder="Select your year" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1st Year (Freshman)">1st Year (Freshman)</SelectItem>
-                    <SelectItem value="2nd Year (Sophomore)">2nd Year (Sophomore)</SelectItem>
-                    <SelectItem value="3rd Year (Junior)">3rd Year (Junior)</SelectItem>
-                    <SelectItem value="4th Year (Senior)">4th Year (Senior)</SelectItem>
+                    <SelectItem value="1st Year">1st Year</SelectItem>
+                    <SelectItem value="2nd Year">2nd Year</SelectItem>
+                    <SelectItem value="3rd Year">3rd Year</SelectItem>
+                    <SelectItem value="4th Year">4th Year</SelectItem>
                     <SelectItem value="Graduate Student">Graduate Student</SelectItem>
-                    <SelectItem value="PhD Student">PhD Student</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -548,8 +563,9 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} className="bg-gradient-to-r from-purple-600 to-blue-500 text-white">
-            Save Changes
+          <Button onClick={handleSubmit} className="bg-gradient-to-r from-purple-600 to-blue-500 text-white" disabled={isSaving}>
+            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSaving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </DialogContent>

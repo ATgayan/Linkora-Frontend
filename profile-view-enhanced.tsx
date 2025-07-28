@@ -28,124 +28,66 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ProtectedRoute from "./components/ProtectedRoute"
 
-
-export type User = {
-  uid: string;
-  fullName: string;
-  nickname?: string;
-  email?: string;
-
-  // Profile visuals
-  profilePicture?: string;
-
-  // University information (flattened + nested)
-  universityName?: string;
-  facultyName?: string;
-  degreeName?: string;
-  universityYear?: string;
-
-  university?: {
-    name?: string;
-    faculty?: string;
-    degree?: string;
-    positions?: string;
-  };
-
-  // Personal & relationship
-  whoAmI?: string;
-  relationshipState?: string;
-  location?: string;
-
-  // Progress
-  profileCompleteness: number;
-
-  // Social links
-  socialLinks?: {
-    github?: string;
-    linkedin?: string;
-    twitter?: string;
-    instagram?: string;
-    facebook?: string;
-    personalWebsite?: string;
-  };
-
-  // Interests, talents, etc.
-  interests?: string;
-  achievements?: string;
-  abilities?: string;
-
-  // Professional section
-  professional?: {
-    currentJobs?: string;
-    societyPositions?: string;
-    workWithPeople?: string;
-    beAroundPeople?: string;
-  };
-
-  // Skills/tags
-  skills?: string[];
-
-  // Optional post-related data
-  posts?: any[];
-  collabs?: any[];
-  connections?: string[]; // or array of user UIDs or profiles
-};
+import { User as Usermodel} from "./model/User";
 
 
 
 
 
 export default function ProfileViewEnhanced() {
-  const { user: authUser } = useAuth()
+  const { user: authUser  } = useAuth()
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<Usermodel | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Only fetch if we have an authenticated user with a UID
-    if (authUser?.uid) {
-      const fetchProfileData = async () => {
-        setIsLoading(true)
-        setError(null)
-        try {
-          // Use the environment variable for the base URL
-          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
-          // The backend will identify the user via the HttpOnly session cookie.
-          // The browser automatically sends this cookie if `credentials: 'include'` is set.
-          const response = await fetch(`${baseUrl}/profile/get-profile/
-            `, {
-            method: "GET",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          })
+    const fetchData = async () => {
+      // Only fetch if we have an authenticated user with a UID
+      if (authUser?.uid)  {
+        const fetchProfileData = async () => {
+          setIsLoading(true)
+          setError(null)
+          try {
+            // Use the environment variable for the base URL
+            const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+            const response = await fetch(`${baseUrl}/profile/get-profile/
+              `, {
+              method: "GET",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json",
+             
+              },
+            })
 
-          if (!response.ok) {
-            const errorData = await response.json()
-            throw new Error(errorData.message || "Failed to fetch profile data")
+            if (!response.ok) {
+              const errorData = await response.json()
+              throw new Error(errorData.message || "Failed to fetch profile data")
+            }
+
+            const data: Usermodel = await response.json()
+            console.log("Fetched profile data:", data)
+              setUser(data?.profile);
+          } catch (err: any) {
+            setError(err.message)
+          } finally {
+            setIsLoading(false)
           }
-
-          const data: User = await response.json()
-          console.log("Fetched profile data:", data)
-          setUser(data?.profile)
-        } catch (err: any) {
-          setError(err.message)
-        } finally {
-          setIsLoading(false)
         }
-      }
 
-      fetchProfileData()
-    } else if (!authUser) {
-      setIsLoading(false)
+        await fetchProfileData()
+      } else if (!authUser) {
+        setIsLoading(false)
+      }
     }
+
+    fetchData()
   }, [authUser])
 
   console.log(user);
 
-  const handleProfileUpdate = (updatedData: User) => {
+  const handleProfileUpdate = (updatedData: Usermodel) => {
     setUser(updatedData)
     setIsEditDialogOpen(false)
     // TODO: Add a fetch call to your backend to save the updated data
@@ -191,7 +133,7 @@ export default function ProfileViewEnhanced() {
         <div className="mt-4 flex flex-col md:flex-row justify-between items-start md:items-center">
           <div className="ml-40">
             <h1 className="text-3xl font-bold tracking-tight">{user?.fullName || "User"}</h1>
-            <p className="text-muted-foreground">@{user?.DegreeCard || "N/A"}</p>
+            <p className="text-muted-foreground">@{user?.degreeCard || "N/A"}</p>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0 ml-40 md:ml-0 z-10">
             <Button variant="outline" size="sm" className="flex items-center gap-1">
@@ -199,7 +141,7 @@ export default function ProfileViewEnhanced() {
               Share
             </Button>
             <Button
-              onClick={() => setIsEditDialogOpen(true)}
+              onClick={() => setIsEditDialogOpen(!isEditDialogOpen)}
               className="bg-gradient-to-r from-purple-600 to-blue-500 text-white flex items-center gap-1"
               size="sm"
             >
@@ -248,7 +190,7 @@ export default function ProfileViewEnhanced() {
       <span className="text-sm">{user.university?.name || "University not set"}</span>
     </div>
     <div className="text-sm text-muted-foreground">
-      {user.university?.faculty || "N/A"} - {user.university?.degree || "N/A"} ({user.universityYear || "N/A"})
+      {user.university?.faculty || "N/A"} - {user.university?.degree || "N/A"} ({user.university?.universityYear || "N/A"})
     </div>
   </CardContent>
 </Card>
@@ -473,7 +415,7 @@ export default function ProfileViewEnhanced() {
       <EditProfileDialog
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
-        userData={user}
+        userData={user as Usermodel}
         onSave={handleProfileUpdate}
       />
     </div>

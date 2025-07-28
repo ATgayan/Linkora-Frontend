@@ -47,7 +47,9 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
 
           {university && typeof university === "object" && (
             <div className="text-sm text-muted-foreground">
-              {university.name}, {university.faculty}, {university.degree}
+              {university.name}<br/>
+              {`Faculty of ${university.faculty}`}<br/>
+              {university.degree}
             </div>
           )}
 

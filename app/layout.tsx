@@ -21,7 +21,6 @@ export default function RootLayout({
       <body suppressHydrationWarning={true}>
         <ClientAuthProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <RefreshTokenHandler /> 
             <div className="relative flex min-h-screen flex-col">
               <NavigationBar />
               <main className="flex-1">{children}</main>

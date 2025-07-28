@@ -72,13 +72,11 @@ export default function SearchPage() {
   }, [])
 
   const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.whoAmI?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (typeof user.university === "string"
-        ? user.university.toLowerCase().includes(searchQuery.toLowerCase())
-        : user.university?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+   const matchesSearch =
+  searchQuery === "" ||
+  (typeof user.fullName === "string" && user.fullName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+  (typeof user.whoAmI === "string" && user.whoAmI.toLowerCase().includes(searchQuery.toLowerCase())) ||
+  (typeof user.university?.name === "string" && user.university.name.toLowerCase().includes(searchQuery.toLowerCase()))
 
     const matchesTags =
       selectedTags.length === 0 ||
@@ -169,11 +167,11 @@ export default function SearchPage() {
                     key={user.uid}
                     className=" border p-4 rounded-xl shadow-sm bg-white dark:bg-gray-950"
                   >
-                    <UserCard user={user} onConnect={handleConnect} />
+                    <UserCard user={{...user,name: user.fullName,photoURL: user.profilePicture,bio:user.whoAmI,skills:user.skills,university:{name:user.university?.name,faculty:user.university?.faculty,degree:user.university?.degree}}} onConnect={handleConnect} />
 
-                    {user.personality?.achievements && (
+                    {user.achievements && (
                       <p className="text-xs mt-3 italic text-green-500">
-                        🏆 {user.personality.achievements}
+                        🏆 {user.achievements}
                       </p>
                     )}
 

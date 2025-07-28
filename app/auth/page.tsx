@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -19,7 +19,7 @@ import { User } from "@/model/User"
 export default function AuthPage() {
 
   const router = useRouter()
-  const { login, signup } = useAuth()
+  const { login, signup,getFreshToken } = useAuth()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -85,7 +85,7 @@ export default function AuthPage() {
       }
 
       const { user } = userCredential
-      const token = await user.getIdToken()
+      const token = await user.getIdToken(true)
       const userObject: User = {
         uid: user.uid,
         fullName: `${firstName} ${lastName}`.trim(),
@@ -124,7 +124,6 @@ export default function AuthPage() {
           collaborations: 5,
         },
         achievements: "Dean's List 2022-2023, 1st Place Hackathon 2022, Published Research Paper on AI Ethics",
-        abilities: "UI/UX Design, Full-stack Development, AI Ethics Research"
       }
 
 
@@ -156,6 +155,8 @@ export default function AuthPage() {
       setIsSubmitting(false)
     }
   }
+
+
 
 
   const handleNextStep = () => {
