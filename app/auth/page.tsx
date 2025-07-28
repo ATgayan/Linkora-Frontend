@@ -19,7 +19,7 @@ import { User } from "@/model/User"
 export default function AuthPage() {
 
   const router = useRouter()
-  const { login, signup,getFreshToken } = useAuth()
+  const { login, signup } = useAuth()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
