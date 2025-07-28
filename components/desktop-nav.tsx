@@ -47,7 +47,7 @@ export function DesktopNav() {
             Linkora
           </span>
         </Link>
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-6"> 
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -75,7 +75,7 @@ export function DesktopNav() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href="/profile">View Profile</Link>
+              <Link href="/">View Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/settings">Settings</Link>

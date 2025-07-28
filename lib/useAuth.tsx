@@ -1,18 +1,23 @@
-"use client"
+"use client";
 
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  signInWithPopup,
   User,
   UserCredential,
+
 } from "firebase/auth";
-import { ReactNode, useContext, useEffect, useState, createContext } from "react";
+import {
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+  createContext,
+} from "react";
 import { auth } from "./firebase";
 
-// Define context type
 interface AuthContextProps {
   user: User | null;
   loading: boolean;
@@ -21,10 +26,9 @@ interface AuthContextProps {
   logout: () => Promise<void>;
 }
 
-// Create context with better default values
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-// Provider component
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,15 +60,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Listen for auth state changes
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
-    return () => unsubscribe();
-  }, []);
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      // 🔁 Force refresh the token
+      const token = await user.getIdToken(true); // true = force refresh
+
+      // ✅ Send token to your backend to update the cookie
+      await fetch(`${baseUrl}/auth/refresh-token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include", // 🍪 Allows backend to set cookie
+      });
+    }
+    setUser(user);
+    setLoading(false);
+  });
+
+  return () => unsubscribe();
+}, []);
+
+ 
+
+
+  
 
   const value: AuthContextProps = {
     user,
@@ -72,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signup,
     login,
     logout,
+
   };
 
   return (
@@ -81,13 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Custom hook to use the auth context
 export function useAuth(): AuthContextProps {
   const context = useContext(AuthContext);
-  
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  
   return context;
 }

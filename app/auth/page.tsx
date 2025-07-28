@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -8,10 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/useAuth";
+
+import { User } from "@/model/User"
 
 export default function AuthPage() {
 
@@ -25,12 +28,12 @@ export default function AuthPage() {
   const [signupStep, setSignupStep] = useState(1)
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
-  const [nickname, setNickname] = useState("")
+  const [DegreeCard, setDegreeCard] = useState("")
   const [university, setUniversity] = useState("")
   const [faculty, setFaculty] = useState("")
   const [degree, setDegree] = useState("")
+  const [universityYear, setUniversityYear] = useState("")
   const [hobbies, setHobbies] = useState("")
-  const [skills, setSkills] = useState("")
 
   const [activeTab, setActiveTab] = useState("signin")
   const [showPassword, setShowPassword] = useState(false)
@@ -41,10 +44,27 @@ export default function AuthPage() {
     e.preventDefault()
     setIsSubmitting(true)
     try {
-      await login(email, password)
-      router.push("/") // redirect to home or dashboard
+      const userCredential = await login(email, password)
+      if (userCredential && userCredential.user) {
+        const token = await userCredential.user.getIdToken()
+        // Send the token to your backend to create a session and set an HttpOnly cookie.
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+
+        if (!response.ok) { throw new Error("Failed to create session on the backend.") }
+
+        router.push("/") // redirect to home or dashboard
+      } else {
+        throw new Error("Login failed to return user information.")
+      }
     } catch (err: any) {
-      alert(err.message)
+      alert(`Login failed: ${err.message}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -53,18 +73,93 @@ export default function AuthPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+
+    let userCredential
+
+
     try {
-      await signup(signupEmail, signupPassword)
+      // 1. Create user in Firebase Auth
+      userCredential = await signup(signupEmail, signupPassword)
+      if (!userCredential || !userCredential.user) {
+        throw new Error("Signup failed to return user information.")
+      }
+
+      const { user } = userCredential
+      const token = await user.getIdToken(true)
+      const userObject: User = {
+        uid: user.uid,
+        fullName: `${firstName} ${lastName}`.trim(),
+        email: signupEmail,
+        degreeCard:DegreeCard ||'',
+        profilePicture: "/placeholder.svg?height=128&width=128",
+        profileCompleteness: 85,
+        relationshipState: "Looking for a relationship",
+        joinDate: "",
+        university: {
+          name: university,
+          faculty,
+          degree,
+          universityYear,
+          positions: "No positions yet"
+        },
+        professional: {
+          currentJobs: "Part-time Web Developer at TechStart, Campus Barista",
+          societyPositions: "Treasurer of Debate Society, Volunteer at Local Shelter",
+          workWithPeople: "Creative thinkers, problem solvers, and those who bring diverse perspectives",
+          beAroundPeople: "Energetic, positive, and intellectually curious individuals who enjoy deep conversations"
+        },
+        personality: {
+          hobbies: ["Photography", "Hiking", "Chess", "Coding", "Reading"],
+          talents: ["Web Development", "Public Speaking", "Creative Writing", "UI/UX Design"]
+        },
+        socialLinks: {
+          github: "github.com/alexj",
+          linkedin: "linkedin.com/in/alexjohnson",
+          twitter: "twitter.com/alexj",
+          instagram: "instagram.com/alex.johnson",
+          personalWebsite: "https://alexjohnson.dev"
+        },
+        activity: {
+          posts: 24,
+          collaborations: 5,
+        },
+        achievements: "Dean's List 2022-2023, 1st Place Hackathon 2022, Published Research Paper on AI Ethics",
+      }
+
+
+      const backendResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/signup`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify({ userObject })
+      })
+
+      if (!backendResponse.ok) {
+        const errorData = await backendResponse.json()
+        throw new Error(errorData.message || "Failed to save user profile to backend.")
+      } else {
+        console.log("User registered successfully!")
+      }
+
       router.push("/")
     } catch (err: any) {
-      alert(err.message)
+      if (userCredential) {
+        console.error("Firebase user created, but backend failed")
+      }
+      alert(`Signup failed: ${err.message}`)
     } finally {
       setIsSubmitting(false)
     }
   }
 
+
+
+
   const handleNextStep = () => {
-    // A small delay to show the animation, can be adjusted
     setIsNavigatingSteps(true)
     setTimeout(() => {
       setSignupStep(2)
@@ -126,6 +221,8 @@ export default function AuthPage() {
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
+
+
 
             {/* Sign In Form */}
             <TabsContent value="signin">
@@ -225,8 +322,8 @@ export default function AuthPage() {
                           <Input
                             id="nickname"
                             placeholder="alex_j"
-                            value={nickname}
-                            onChange={(e) => setNickname(e.target.value)}
+                            value={DegreeCard}
+                            onChange={(e) => setDegreeCard(e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
@@ -297,16 +394,21 @@ export default function AuthPage() {
                             onChange={(e) => setDegree(e.target.value)}
                           />
                         </div>
-                        
                         <div className="space-y-2">
-                          <Label htmlFor="skills">Skills</Label>
-                          <Input
-                            id="skills"
-                            placeholder="e.g., Python, React, UI Design..."
-                            value={skills}
-                            onChange={(e) => setSkills(e.target.value)}
-                          />
+                          <Label htmlFor="university-year">University Year</Label>
+                          <Select value={universityYear} onValueChange={setUniversityYear}>
+                            <SelectTrigger id="university-year">
+                              <SelectValue placeholder="Select your year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="First Year">First Year</SelectItem>
+                              <SelectItem value="Second Year">Second Year</SelectItem>
+                              <SelectItem value="Third Year">Third Year</SelectItem>
+                              <SelectItem value="Fourth Year">Fourth Year</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
+
                         <div className="flex items-center space-x-2">
                           <Checkbox id="terms" />
                           <label

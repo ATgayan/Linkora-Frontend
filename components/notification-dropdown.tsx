@@ -24,7 +24,7 @@ export function NotificationDropdown() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {notificationCount > 0 && (
-            <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full bg-purple-500 p-0 text-xs">
+            <Badge className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-purple-500 p-0 text-xs">
               {notificationCount}
             </Badge>
           )}
