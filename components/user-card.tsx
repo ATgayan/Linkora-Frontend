@@ -1,7 +1,10 @@
+'use client'
+
 import React from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { useRouter } from "next/navigation" // ✅ correct one for App Router
 
 type UserCardProps = {
   user: {
@@ -19,6 +22,8 @@ type UserCardProps = {
 }
 
 export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
+  const router = useRouter() 
+
   const {
     uid,
     name,
@@ -45,10 +50,10 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
         <div>
           <div className="text-lg font-semibold">{name}</div>
 
-          {university && typeof university === "object" && (
+          {university && (
             <div className="text-sm text-muted-foreground">
-              {university.name}<br/>
-              {`Faculty of ${university.faculty}`}<br/>
+              {university.name}<br />
+              {`Faculty of ${university.faculty}`}<br />
               {university.degree}
             </div>
           )}
@@ -80,6 +85,14 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
           onClick={() => onConnect(uid)}
         >
           Message
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-50 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90"
+          onClick={() => router.push(`/profile/${uid}`)} // ✅ use router directly
+        >
+          View profile
         </Button>
       </div>
     </div>
