@@ -288,9 +288,9 @@ export default function ProfileViewEnhanced() {
           <Tabs defaultValue="about" className="w-full">
             <TabsList className="w-full justify-start">
               <TabsTrigger value="about">About</TabsTrigger>
-              <TabsTrigger value="posts">Posts</TabsTrigger>
+              {/* <TabsTrigger value="posts">Posts</TabsTrigger>
               <TabsTrigger value="collabs">Collaborations</TabsTrigger>
-              <TabsTrigger value="connections">Connections</TabsTrigger>
+              <TabsTrigger value="connections">Connections</TabsTrigger> */}
             </TabsList>
 
             <TabsContent value="about" className="space-y-6 mt-6">

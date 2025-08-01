@@ -59,7 +59,7 @@ export default function AuthPage() {
 
         if (!response.ok) { throw new Error("Failed to create session on the backend.") }
 
-        router.push("/") // redirect to home or dashboard
+        router.push(`/profile/${userCredential.user.uid}`) // redirect to profile with uid param
       } else {
         throw new Error("Login failed to return user information.")
       }
@@ -145,7 +145,7 @@ export default function AuthPage() {
         console.log("User registered successfully!")
       }
 
-      router.push("/")
+      router.push(`/profile/${userCredential.user.uid}`)
     } catch (err: any) {
       if (userCredential) {
         console.error("Firebase user created, but backend failed")
