@@ -178,7 +178,8 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         abilities: formData.abilities || [],
         skills: formData.skills || [],
         uid: "",
-        profileCompleteness: 0
+        profileCompleteness: 0,
+        
       };
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/update-profile/`, {

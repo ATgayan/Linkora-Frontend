@@ -9,7 +9,7 @@ import { NavigationBar } from "@/components/navigation-bar"
 import { Toaster } from "@/components/ui/toaster"
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
-  const { isLoading } = useAuth()
+  const { loading:isLoading } = useAuth()
   const pathname = usePathname()
 
   // The auth pages have their own layout and don't need the navigation bar

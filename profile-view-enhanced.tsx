@@ -68,7 +68,8 @@ export default function ProfileViewEnhanced() {
 
             const data: Usermodel = await response.json()
             console.log("Fetched profile data:", data)
-              setUser(data?.profile);
+            console.log('fetch data',data);
+            setUser(data);
           } catch (err: any) {
             setError(err.message)
           } finally {
@@ -219,7 +220,7 @@ export default function ProfileViewEnhanced() {
             </CardContent>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
                 <LinkIcon className="h-5 w-5 mr-2" />
@@ -279,7 +280,7 @@ export default function ProfileViewEnhanced() {
                 </a>
               )}
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Right Panel */}
@@ -287,9 +288,9 @@ export default function ProfileViewEnhanced() {
           <Tabs defaultValue="about" className="w-full">
             <TabsList className="w-full justify-start">
               <TabsTrigger value="about">About</TabsTrigger>
-              <TabsTrigger value="posts">Posts</TabsTrigger>
+              {/* <TabsTrigger value="posts">Posts</TabsTrigger>
               <TabsTrigger value="collabs">Collaborations</TabsTrigger>
-              <TabsTrigger value="connections">Connections</TabsTrigger>
+              <TabsTrigger value="connections">Connections</TabsTrigger> */}
             </TabsList>
 
             <TabsContent value="about" className="space-y-6 mt-6">

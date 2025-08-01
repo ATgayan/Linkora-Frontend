@@ -25,7 +25,7 @@ export function MobileNav() {
     { href: "/settings", label: "Settings", icon: Settings },
   ]
 
-  const { logout } = useAuth();
+  const { user,logout } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -39,7 +39,7 @@ export function MobileNav() {
 
   return (
     <div className="flex w-full items-center justify-between md:hidden">
-      <Link href="/" className="flex items-center space-x-2">
+      <Link href={user ? `/profile/${user.uid}` : "/profile"} className="flex items-center space-x-2">
         <span className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-xl font-bold text-transparent">
           Linkora
         </span>
