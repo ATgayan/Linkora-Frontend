@@ -41,10 +41,10 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
 const handleConnect = () => {
   if (user) {
     onConnect(uid);
-    router.push(`/messages/${uid}`);
+    // router.push(`/messages/${uid}`);
   } else {
     console.log(`Connection request sent to user ${uid}`);
-    router.push(`/messages/${uid}`);
+    // router.push(`/messages/${uid}`);
   }
 };
 
