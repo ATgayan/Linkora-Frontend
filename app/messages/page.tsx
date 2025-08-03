@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import axios from 'axios'
 import {
   Chat,
   Channel,
@@ -23,31 +22,31 @@ export default function ChatPage() {
   
   const {user } =useAuth();
 
-  useEffect(() => {
-    async function init() {
-      console.log('user',user);
-      if (!user) return
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/chat/token`, {
-        userId: user?.uid || null,
-      })
+//   useEffect(() => {
+//     async function init() {
+//       console.log('user',user);
+//       if (!user) return
+//       const res = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/chat/token`, {
+//         userId: user?.uid || null,
+//       })
 
-      await streamClient.connectUser(user as any, res.data.token)
+//       await streamClient.connectUser(user as any, res.data.token)
 
-      const channel = streamClient.channel('messaging', {
- members: [user?.uid || '', 'otherUserId'], // Replace 'otherUserId' with the actual ID of the user you want to chat with
- })
+//       const channel = streamClient.channel('messaging', {
+//  members: [user?.uid || '', 'otherUserId'], // Replace 'otherUserId' with the actual ID of the user you want to chat with
+//  })
 
-      await channel.watch()
-      setChannel(channel)
-      setReady(true)
-    }
+//       await channel.watch()
+//       setChannel(channel)
+//       setReady(true)
+//     }
 
-    init()
+//     init()
 
-    return () => {
-      streamClient.disconnectUser()
-    }
-  }, [])
+//     return () => {
+//       streamClient.disconnectUser()
+//     }
+//   }, [])
 
   if (!ready || !channel) return <div>Loading chat...</div>
 
