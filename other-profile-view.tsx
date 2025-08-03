@@ -250,30 +250,13 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
             <p className="text-muted-foreground">@{formData.degreeCard || 'student'}</p>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0 ml-40 md:ml-0">
-            <Button variant="outline" size="sm" className="flex items-center gap-1" onClick={handleMessage}>
+            <Button variant="outline" size="sm" className="flex items-center gap-1 mr-10" onClick={handleMessage}>
               <MessageSquare className="h-4 w-4" />
               Message
             </Button>
-            <Button
-              variant={isConnected ? "outline" : isPending ? "secondary" : "default"}
-              size="sm"
-              className={`flex items-center gap-1 ${
-                !isConnected && !isPending ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white" : ""
-              }`}
-              onClick={handleConnect}
-            >
-              <UserPlus className="h-4 w-4" />
-              {isConnected ? "Connected" : isPending ? "Pending" : "Connect"}
-            </Button>
-            <Button variant="outline" size="sm" className="flex items-center gap-1" onClick={handleCollaborate}>
-              <Users className="h-4 w-4" />
-              Collaborate
-            </Button>
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem className="flex items-center">
@@ -436,9 +419,9 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
           <Tabs defaultValue="about" className="w-full">
             <TabsList className="w-full justify-start">
               <TabsTrigger value="about">About</TabsTrigger>
-              <TabsTrigger value="posts">Posts</TabsTrigger>
+              {/* <TabsTrigger value="posts">Posts</TabsTrigger>
               <TabsTrigger value="collabs">Collaborations</TabsTrigger>
-              <TabsTrigger value="connections">Connections</TabsTrigger>
+              <TabsTrigger value="connections">Connections</TabsTrigger> */}
             </TabsList>
 
             <TabsContent value="about" className="space-y-6 mt-6">

@@ -24,6 +24,9 @@ type UserCardProps = {
 export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
   const router = useRouter() 
 
+
+
+
   const {
     uid,
     name,
@@ -34,6 +37,16 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
     bio,
     skills = [],
   } = user
+
+const handleConnect = () => {
+  if (user) {
+    onConnect(uid);
+    router.push(`/messages/${uid}`);
+  } else {
+    console.log(`Connection request sent to user ${uid}`);
+    router.push(`/messages/${uid}`);
+  }
+};
 
   return (
     <div className="rounded-xl border p-4 shadow-sm bg-white dark:bg-gray-900 transition hover:shadow-md">
@@ -82,7 +95,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
         <Button
           size="sm"
           className="w-50 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90"
-          onClick={() => onConnect(uid)}
+          onClick={() => handleConnect()}
         >
           Message
         </Button>
