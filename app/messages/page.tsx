@@ -1,548 +1,214 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Input } from "@/components/ui/input"
+import { useChat } from '@/lib/StreamChatProvider';
 import {
-  PaperclipIcon,
-  SendIcon,
-  SmileIcon,
-  SearchIcon,
-  PhoneIcon,
-  VideoIcon,
-  InfoIcon,
-  ImageIcon,
-  MicIcon,
-  ThumbsUpIcon,
-  PlusIcon,
-} from "lucide-react"
-import ProtectedRoute from "@/components/ProtectedRoute"
+  Chat,
+  Channel,
+  ChannelHeader,
+  MessageList,
+  MessageInput,
+  Thread,
+  Window,
+} from 'stream-chat-react';
+import { useEffect, useState } from 'react';
+import type { Channel as StreamChannel } from 'stream-chat';
+import { Card } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { MessageCircle, Users, Search } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
-export default function MessagesPage() {
-  const [activeChat, setActiveChat] = React.useState(1)
-  const [message, setMessage] = React.useState("")
-  const [searchQuery, setSearchQuery] = React.useState("")
-  const messagesEndRef = React.useRef<HTMLDivElement>(null)
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null)
+import 'stream-chat-react/dist/css/v2/index.css';
 
-  // Sample chat data with more realistic messenger-like data
-  const [chats, setChats] = React.useState([
-    {
-      id: 1,
-      user: {
-        name: "Alex Johnson",
-        avatar: "/placeholder.svg?height=40&width=40",
-        status: "online",
-        lastSeen: "Active now",
-        username: "alex-johnson",
-      },
-      lastMessage: {
-        content: "That sounds perfect! I'd love to see your portfolio.",
-        time: "2m",
-        sender: "me",
-        unread: false,
-      },
-      messages: [
-        {
-          id: 1,
-          content:
-            "Hey! I saw your post about the mobile app project. I'm interested in helping with the UI/UX design.",
-          sender: "them",
-          time: "10:30 AM",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        },
-        {
-          id: 2,
-          content:
-            "That's great! I've been looking for someone with design skills. Do you have any examples of your previous work?",
-          sender: "me",
-          time: "10:32 AM",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        },
-        {
-          id: 3,
-          content:
-            "Yes, I can share my portfolio with you. I've worked on several mobile apps before, including a campus events app for my previous university.",
-          sender: "them",
-          time: "10:35 AM",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        },
-        {
-          id: 4,
-          content:
-            "That sounds perfect! I'd love to see your portfolio. When would you be available to discuss the project in more detail?",
-          sender: "me",
-          time: "10:38 AM",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        },
-        {
-          id: 5,
-          content: "I'm free this weekend if you'd like to meet up and discuss the project in detail.",
-          sender: "them",
-          time: "10:40 AM",
-          timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
-        },
-        {
-          id: 6,
-          content: "Perfect! Let's meet at the campus coffee shop on Saturday at 2 PM.",
-          sender: "me",
-          time: "10:42 AM",
-          timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
-        },
-        {
-          id: 7,
-          content: "Sounds great! I'll bring my portfolio and some initial mockups I've been working on.",
-          sender: "them",
-          time: "10:45 AM",
-          timestamp: new Date(Date.now() - 30 * 60 * 1000),
-        },
-        {
-          id: 8,
-          content: "Awesome! Looking forward to seeing your work. This is going to be an exciting collaboration! 🚀",
-          sender: "me",
-          time: "2m",
-          timestamp: new Date(Date.now() - 2 * 60 * 1000),
-        },
-      ],
-    },
-    {
-      id: 2,
-      user: {
-        name: "Taylor Reed",
-        avatar: "/placeholder.svg?height=40&width=40",
-        status: "offline",
-        lastSeen: "Active 2h ago",
-        username: "taylor-reed",
-      },
-      lastMessage: {
-        content: "Hello! Thanks for reaching out. Do you have experience with sound design for films?",
-        time: "2h",
-        sender: "me",
-        unread: false,
-      },
-      messages: [
-        {
-          id: 1,
-          content: "Hi there! I'm interested in your short film sound design project.",
-          sender: "them",
-          time: "Yesterday",
-          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        },
-        {
-          id: 2,
-          content: "Hello! Thanks for reaching out. Do you have experience with sound design for films?",
-          sender: "me",
-          time: "2h",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        },
-      ],
-    },
-    {
-      id: 3,
-      user: {
-        name: "Jordan Patel",
-        avatar: "/placeholder.svg?height=40&width=40",
-        status: "online",
-        lastSeen: "Active now",
-        username: "jordan-patel",
-      },
-      lastMessage: {
-        content:
-          "Hey, I saw your profile and noticed you're into game development. I'm working on a 2D platformer and looking for collaborators.",
-        time: "1d",
-        sender: "them",
-        unread: true,
-      },
-      messages: [
-        {
-          id: 1,
-          content:
-            "Hey, I saw your profile and noticed you're into game development. I'm working on a 2D platformer and looking for collaborators.",
-          sender: "them",
-          time: "1d",
-          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        },
-      ],
-    },
-    {
-      id: 4,
-      user: {
-        name: "Riley Kim",
-        avatar: "/placeholder.svg?height=40&width=40",
-        status: "offline",
-        lastSeen: "Active 1h ago",
-        username: "riley-kim",
-      },
-      lastMessage: {
-        content: "Thanks for the collaboration! The design looks amazing 🎨",
-        time: "3h",
-        sender: "them",
-        unread: true,
-      },
-      messages: [
-        {
-          id: 1,
-          content: "Thanks for the collaboration! The design looks amazing 🎨",
-          sender: "them",
-          time: "3h",
-          timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
-        },
-      ],
-    },
-  ])
+export default function ChatPage() {
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const chatClient = useChat();
+  const [channel, setChannel] = useState<StreamChannel | null>(null);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null);
+  const [recentMessages, setRecentMessages] = useState<any[]>([]);
+  const [unread, setUnread] = useState<{ [userId: string]: boolean }>({});
 
-  const activeConversation = chats.find((chat) => chat.id === activeChat)
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
-  // Filter chats based on search
-  const filteredChats = chats.filter((chat) => chat.user.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  // Auto-resize textarea
-  const adjustTextareaHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto"
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + "px"
-    }
-  }
-
-  // Scroll to bottom when messages change
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
-    }
-  }
-
-  React.useEffect(() => {
-    scrollToBottom()
-  }, [activeConversation?.messages])
-
-  React.useEffect(() => {
-    adjustTextareaHeight()
-  }, [message])
-
-  const handleSendMessage = () => {
-    if (message.trim() === "") return
-
-    const newMessage = {
-      id: Date.now(),
-      content: message,
-      sender: "me" as const,
-      time: "now",
-      timestamp: new Date(),
-    }
-
-    setChats((prevChats) =>
-      prevChats.map((chat) =>
-        chat.id === activeChat
-          ? {
-              ...chat,
-              messages: [...chat.messages, newMessage],
-              lastMessage: {
-                content: message,
-                time: "now",
-                sender: "me",
-                unread: false,
-              },
-            }
-          : chat,
-      ),
-    )
-
-    setMessage("")
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      if (message.trim()) {
-        handleSendMessage()
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(`${baseUrl}/chat/all-users`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const data = await res.json();
+        setAllUsers(data.users);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
       }
-    }
-  }
+    };
 
-  const sendLike = () => {
-    const likeMessage = {
-      id: Date.now(),
-      content: "👍",
-      sender: "me" as const,
-      time: "now",
-      timestamp: new Date(),
-    }
+    fetchUsers();
+  }, []);
 
-    setChats((prevChats) =>
-      prevChats.map((chat) =>
-        chat.id === activeChat
-          ? {
-              ...chat,
-              messages: [...chat.messages, likeMessage],
-              lastMessage: {
-                content: "👍",
-                time: "now",
-                sender: "me",
-                unread: false,
-              },
-            }
-          : chat,
-      ),
-    )
-  }
+  useEffect(() => {
+    if (!chatClient) return;
 
-  const formatMessageTime = (timestamp: Date) => {
-    const now = new Date()
-    const diff = now.getTime() - timestamp.getTime()
-    const minutes = Math.floor(diff / (1000 * 60))
-    const hours = Math.floor(diff / (1000 * 60 * 60))
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const handleNewMessage = (event: any) => {
+      const senderId = event.user?.id;
+      if (senderId === chatClient.userID) return;
 
-    if (minutes < 1) return "now"
-    if (minutes < 60) return `${minutes}m`
-    if (hours < 24) return `${hours}h`
-    if (days < 7) return `${days}d`
-    return timestamp.toLocaleDateString()
-  }
+      const senderUser = allUsers.find((u) => u.streamUserId === senderId);
+      if (!senderUser) return;
+
+      setRecentMessages((prev) => {
+        const exists = prev.find((u) => u.streamUserId === senderId);
+        if (exists) return prev;
+        return [senderUser, ...prev];
+      });
+
+      setUnread((prev) => ({ ...prev, [senderId]: true }));
+    };
+
+    chatClient.on('message.new', handleNewMessage);
+    return () => chatClient.off('message.new', handleNewMessage);
+  }, [chatClient, allUsers]);
+
+  if (!chatClient || !mounted) return null;
 
   return (
-    <ProtectedRoute>
-    <div className="h-[calc(100vh-3.5rem)] flex bg-background">
-      {/* Sidebar */}
-      <div className="w-80 border-r border-border flex flex-col bg-card">
-        {/* Sidebar Header */}
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold">Chats</h1>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <PlusIcon className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Search */}
-          <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search Messenger"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-muted/50 border-0 rounded-full"
-            />
-          </div>
-        </div>
-
-        {/* Chat List */}
-        <ScrollArea className="flex-1">
-          <div className="p-2">
-            {filteredChats.map((chat) => (
-              <button
-                key={chat.id}
-                className={`w-full p-3 rounded-lg text-left transition-all duration-200 hover:bg-muted/50 ${
-                  activeChat === chat.id ? "bg-muted" : ""
-                }`}
-                onClick={() => setActiveChat(chat.id)}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={chat.user.avatar || "/placeholder.svg"} alt={chat.user.name} />
-                      <AvatarFallback>{chat.user.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    {chat.user.status === "online" && (
-                      <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-background bg-green-500"></div>
-                    )}
+    <div className="fixed w-full bg-background p-4">
+      <div className="container mx-auto max-w-7xl">
+        <Card className="shadow-xl border overflow-hidden bg-card">
+          <Chat client={chatClient} key={theme} theme="messaging light">
+            <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] min-h-[calc(100vh-200px)]">
+              <div className="border-r border-border bg-muted/30">
+                <div className="p-6 border-b border-border">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold flex items-center gap-2 text-foreground">
+                      <MessageCircle className="h-5 w-5 text-primary" />
+                      Chats
+                    </h2>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                      {allUsers.length - 1}
+                    </Badge>
                   </div>
+                  <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <input
+                      className="w-full pl-10 pr-4 py-2 text-sm bg-background border border-input rounded-lg"
+                      placeholder="Search conversations..."
+                    />
+                  </div>
+                </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="font-semibold truncate text-sm">{chat.user.name}</p>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-muted-foreground">{chat.lastMessage.time}</span>
-                        {chat.lastMessage.unread && <div className="h-2 w-2 rounded-full bg-blue-500"></div>}
+                <div className="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-350px)]">
+                  {recentMessages.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-sm font-medium text-muted-foreground mb-3 px-2 flex items-center gap-2">
+                        <div className="h-1 w-1 rounded-full bg-primary"></div>
+                        Recent
+                      </h3>
+                      <div className="space-y-1">
+                        {recentMessages.map((u) => (
+                          <UserItem key={u.id} u={u} unread={unread[u.streamUserId]} selected={user?.id === u.id} openChat={openChat} />
+                        ))}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      {chat.lastMessage.sender === "me" && <span className="text-xs text-muted-foreground">You: </span>}
-                      <p
-                        className={`text-xs truncate ${chat.lastMessage.unread ? "font-semibold text-foreground" : "text-muted-foreground"}`}
-                      >
-                        {chat.lastMessage.content}
-                      </p>
+                  )}
+
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-3 px-2 flex items-center gap-2">
+                      <Users className="h-3 w-3" />
+                      All Users
+                    </h3>
+                    <div className="space-y-1">
+                      {allUsers
+                        .filter((u) => u.streamUserId !== chatClient.userID)
+                        .filter((u) => !recentMessages.find((r) => r.id === u.id))
+                        .map((u) => (
+                          <UserItem key={u.id} u={u} unread={unread[u.streamUserId]} selected={user?.id === u.id} openChat={openChat} />
+                        ))}
                     </div>
                   </div>
                 </div>
-              </button>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
-
-      {/* Chat Area */}
-      {activeConversation ? (
-        <div className="flex-1 flex flex-col">
-          {/* Chat Header */}
-          <div className="h-16 border-b border-border bg-card px-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage
-                    src={activeConversation.user.avatar || "/placeholder.svg"}
-                    alt={activeConversation.user.name}
-                  />
-                  <AvatarFallback>{activeConversation.user.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                {activeConversation.user.status === "online" && (
-                  <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500"></div>
-                )}
               </div>
-              <div>
-                <p className="font-semibold text-sm">{activeConversation.user.name}</p>
-                <p className="text-xs text-muted-foreground">{activeConversation.user.lastSeen}</p>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="rounded-full text-blue-500 hover:bg-blue-50">
-                <PhoneIcon className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="rounded-full text-blue-500 hover:bg-blue-50">
-                <VideoIcon className="h-5 w-5" />
-              </Button>
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/profile/${activeConversation.user.username}`}>
-                  <InfoIcon className="h-4 w-4 mr-1" />
-                  Profile
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full">
-              <div className="p-4 space-y-1">
-                {activeConversation.messages.map((msg, index) => {
-                  const showTime =
-                    index === 0 ||
-                    (activeConversation.messages[index - 1] &&
-                      msg.timestamp.getTime() - activeConversation.messages[index - 1].timestamp.getTime() >
-                        5 * 60 * 1000)
-
-                  return (
-                    <div key={msg.id}>
-                      {showTime && (
-                        <div className="text-center my-4">
-                          <span className="text-xs text-muted-foreground bg-background px-3 py-1 rounded-full">
-                            {formatMessageTime(msg.timestamp)}
-                          </span>
-                        </div>
-                      )}
-                      <div className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"} mb-1`}>
-                        <div
-                          className={`max-w-[70%] px-4 py-2 rounded-2xl ${
-                            msg.sender === "me"
-                              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white ml-12"
-                              : "bg-muted mr-12"
-                          }`}
-                        >
-                          <p className="text-sm break-words">{msg.content}</p>
-                        </div>
+              <div className="flex flex-col bg-card">
+                {channel ? (
+                  <Channel channel={channel}>
+                    <Window>
+                      <ChannelHeader />
+                      <div className="flex-1 min-h-[300px] max-h-[calc(100vh-350px)]">
+                        <MessageList />
                       </div>
-                    </div>
-                  )
-                })}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* Message Input */}
-          <div className="border-t border-border bg-card p-4">
-            <div className="flex items-end gap-3">
-              <div className="flex gap-2">
-                <Button variant="ghost" size="icon" className="rounded-full text-blue-500 hover:bg-blue-50">
-                  <PlusIcon className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="rounded-full text-blue-500 hover:bg-blue-50">
-                  <ImageIcon className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="rounded-full text-blue-500 hover:bg-blue-50">
-                  <PaperclipIcon className="h-5 w-5" />
-                </Button>
-              </div>
-
-              <div className="flex-1 relative">
-                <textarea
-                  ref={textareaRef}
-                  placeholder="Aa"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  className="w-full min-h-[40px] max-h-[120px] px-4 py-2 pr-12 rounded-full border border-input bg-muted/50 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-muted-foreground"
-                  rows={1}
-                />
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full text-blue-500 hover:bg-blue-50"
-                >
-                  <SmileIcon className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <div className="flex gap-2">
-                <Button variant="ghost" size="icon" className="rounded-full text-blue-500 hover:bg-blue-50">
-                  <MicIcon className="h-5 w-5" />
-                </Button>
-
-                {message.trim() ? (
-                  <Button
-                    onClick={handleSendMessage}
-                    size="icon"
-                    className="rounded-full bg-blue-500 hover:bg-blue-600 text-white"
-                  >
-                    <SendIcon className="h-4 w-4" />
-                  </Button>
+                      <MessageInput />
+                    </Window>
+                    <Thread />
+                  </Channel>
                 ) : (
-                  <Button
-                    onClick={sendLike}
-                    size="icon"
-                    className="rounded-full bg-blue-500 hover:bg-blue-600 text-white"
-                  >
-                    <ThumbsUpIcon className="h-4 w-4" />
-                  </Button>
+                  <WelcomeMessage />
                 )}
               </div>
             </div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-muted/20">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-6">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="40"
-              height="40"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-white"
-            >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-          </div>
-          <h3 className="text-2xl font-bold mb-2">Your Messages</h3>
-          <p className="text-muted-foreground mb-6 max-w-md">
-            Send private messages to collaborators, share ideas, and build amazing projects together.
-          </p>
-          <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-full px-6">
-            Start New Conversation
-          </Button>
-        </div>
-      )}
+          </Chat>
+        </Card>
+      </div>
     </div>
-    </ProtectedRoute>
-  )
+  );
+
+  async function openChat(u: any) {
+    if (!chatClient) return;
+    const newChannel = chatClient.channel('messaging', {
+      members: [chatClient.userID!, u.streamUserId],
+    });
+    await newChannel.watch();
+    setChannel(newChannel);
+    setUser(u);
+    setUnread((prev) => ({ ...prev, [u.streamUserId]: false }));
+  }
+
+  function UserItem({ u, unread, selected, openChat }: any) {
+    return (
+      <div
+        className={`group flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+          selected ? 'bg-primary/10 border border-primary/20' : 'hover:bg-accent'
+        }`}
+        onClick={() => openChat(u)}
+      >
+        <div className="relative">
+          <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
+            <AvatarImage src={u.image || '/profile_Pic/nopic.jpg'} alt={u.name || 'User'} />
+            <AvatarFallback>{u.name?.charAt(0) || 'U'}</AvatarFallback>
+          </Avatar>
+          {unread && <div className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full border-2 border-background"></div>}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className={`font-medium text-sm ${unread ? 'text-foreground' : 'text-foreground/80'} truncate`}>
+            {u.name || 'User'} {unread && <strong className="ml-1">•</strong>}
+          </p>
+          <p className="text-xs text-muted-foreground truncate">
+            {u.lastMessage || 'Click to start chatting...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  function WelcomeMessage() {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
+        <div className="rounded-full bg-primary/10 p-6 mb-6">
+          <MessageCircle className="h-12 w-12 text-primary" />
+        </div>
+        <h3 className="text-xl font-semibold text-foreground mb-2">Welcome to Messages</h3>
+        <p className="text-muted-foreground mb-6 max-w-md">
+          Select a user from the sidebar to start a conversation and collaborate with your peers.
+        </p>
+      </div>
+    );
+  }
 }
