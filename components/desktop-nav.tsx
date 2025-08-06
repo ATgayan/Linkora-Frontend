@@ -23,7 +23,7 @@ export function DesktopNav() {
 
   const navItems = [
     { href: "/discover", label: "Discover", icon: Search },
-    // { href: "/messages", label: "Messages", icon: MessageSquare },
+    { href: "/messages", label: "Messages", icon: MessageSquare },
   ]
 
 
@@ -64,7 +64,7 @@ export function DesktopNav() {
         </nav>
       </div>
       <div className="flex items-center gap-4">
-        <NotificationDropdown />
+   
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

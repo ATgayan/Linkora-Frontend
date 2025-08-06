@@ -1,10 +1,10 @@
 'use client'
 
-import React from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
-import { useRouter } from "next/navigation" // ✅ correct one for App Router
+import React from 'react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 type UserCardProps = {
   user: {
@@ -22,10 +22,7 @@ type UserCardProps = {
 }
 
 export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
-  const router = useRouter() 
-
-
-
+  const router = useRouter()
 
   const {
     uid,
@@ -38,74 +35,83 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
     skills = [],
   } = user
 
-const handleConnect = () => {
-  if (user) {
-    onConnect(uid);
-    // router.push(`/messages/${uid}`);
-  } else {
-    console.log(`Connection request sent to user ${uid}`);
-    // router.push(`/messages/${uid}`);
+  const handleConnect = () => {
+    if (user) {
+      onConnect(uid)
+      router.push(`/messages/${uid}`)
+    } else {
+      console.log(`Connection request sent to user ${uid}`)
+      router.push(`/messages/${uid}`)
+    }
   }
-};
 
   return (
-    <div className="rounded-xl border p-4 shadow-sm bg-white dark:bg-gray-900 transition hover:shadow-md">
-      <div className="flex items-center gap-4 mb-3">
-        {/* Profile Picture */}
+    <div className="w-full max-w-md mx-auto rounded-2xl border bg-card p-6 shadow-lg transition hover:shadow-xl dark:border-border">
+      <div className="flex items-center gap-4">
         <Image
-          src={photoURL || "/default-avatar.png"}
+          src={photoURL || '/default-avatar.png'}
           alt={name}
-          width={64}
-          height={64}
-          className="rounded-full border object-cover"
+          width={72}
+          height={72}
+          className=" h-20 w-20 rounded-full border object-cover"
         />
 
         <div>
-          <div className="text-lg font-semibold">{name}</div>
+          <h2 className="text-xl font-semibold text-foreground">{name}</h2>
 
           {university && (
-            <div className="text-sm text-muted-foreground">
-              {university.name}<br />
-              {`Faculty of ${university.faculty}`}<br />
-              {university.degree}
+            <div className="text-sm text-muted-foreground mt-1 leading-tight">
+              {university.name && <p>{university.name}</p>}
+              {university.faculty && <p>Faculty of {university.faculty}</p>}
+              {university.degree && <p>{university.degree}</p>}
             </div>
           )}
 
-          {location && <div className="text-sm text-muted-foreground">{location}</div>}
+          {location && (
+            <div className="text-sm text-muted-foreground mt-1">{location}</div>
+          )}
 
           {relationshipStatus && (
-            <div className="text-sm italic text-gray-500">{relationshipStatus}</div>
+            <div className="text-sm italic text-muted-foreground mt-1">
+              {relationshipStatus}
+            </div>
           )}
         </div>
       </div>
 
-      {bio && <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{bio}</p>}
+      {bio && (
+        <p className="text-sm text-muted-foreground mt-4 line-clamp-3">{bio}</p>
+      )}
 
       {skills.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mt-4">
           {skills.map((skill, idx) => (
-            <Badge key={idx} variant="secondary" className="rounded-full">
+            <Badge
+              key={idx}
+              variant="secondary"
+              className="rounded-full text-sm px-3 py-1"
+            >
               {skill}
             </Badge>
           ))}
         </div>
       )}
 
-      <div className="flex justify-between">
+      <div className="mt-6 flex gap-3">
         <Button
           size="sm"
-          className="w-50 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90"
-          onClick={() => handleConnect()}
+          className="flex-1 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90"
+          onClick={handleConnect}
         >
           Message
         </Button>
         <Button
           size="sm"
           variant="outline"
-          className="w-50 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90"
-          onClick={() => router.push(`/profile/${uid}`)} // ✅ use router directly
+          className="flex-1 rounded-full border-primary text-primary hover:bg-primary/10"
+          onClick={() => router.push(`/profile/${uid}`)}
         >
-          View profile
+          View Profile
         </Button>
       </div>
     </div>
