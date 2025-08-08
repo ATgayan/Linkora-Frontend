@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/useAuth";
+import { initChat } from "@/lib/StreamChatProvider";
 
 import { User } from "@/model/User"
 
@@ -46,6 +47,7 @@ export default function AuthPage() {
     try {
       const userCredential = await login(email, password)
       if (userCredential && userCredential.user) {
+        const { user } = userCredential
         const token = await userCredential.user.getIdToken()
         // Send the token to your backend to create a session and set an HttpOnly cookie.
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
@@ -58,7 +60,8 @@ export default function AuthPage() {
 
 
         if (!response.ok) { throw new Error("Failed to create session on the backend.") }
-
+        // 2. Initialize chat client
+        await initChat(user);
         router.push(`/profile/${userCredential.user.uid}`) // redirect to profile with uid param
       } else {
         throw new Error("Login failed to return user information.")
@@ -144,6 +147,8 @@ export default function AuthPage() {
       } else {
         console.log("User registered successfully!")
       }
+      // 2. Initialize chat client
+      await initChat(user);
 
       router.push(`/profile/${userCredential.user.uid}`)
     } catch (err: any) {

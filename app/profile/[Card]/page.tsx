@@ -25,7 +25,7 @@ export default function ProfilePage() {
     return () => unsubscribe()
   }, [])
 
-  if (loading) return <p>Loading profile...</p>
+  if (loading) return null;
 
   const isOwnProfile = currentUid === profileUid;
 

@@ -19,14 +19,14 @@ import { useAuth } from "@/lib/useAuth"
 
 export function DesktopNav() {
   const pathname = usePathname()
+    const { user, logout } = useAuth();
 
   const navItems = [
     { href: "/discover", label: "Discover", icon: Search },
-    { href: "/collab", label: "Collaborations", icon: Users },
     { href: "/messages", label: "Messages", icon: MessageSquare },
   ]
 
-  const { user, logout } = useAuth();
+
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -64,7 +64,7 @@ export function DesktopNav() {
         </nav>
       </div>
       <div className="flex items-center gap-4">
-        <NotificationDropdown />
+   
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
