@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/lib/useAuth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -20,62 +21,100 @@ import {
   Twitter,
   Instagram,
   Edit,
+  Loader2,
   Share2,
 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ProtectedRoute from "./components/ProtectedRoute"
 
-// Sample user data
-const userData = {
-  nickname: "Alex_J",
-  fullName: "Alex Johnson",
-  profilePicture: "/placeholder.svg?height=128&width=128",
-  relationshipStatus: "Looking for a relationship",
-  location: "Cambridge, MA",
-  joinDate: "May 2023",
-  profileCompleteness: 85,
-  university: {
-    name: "Stanford University",
-    faculty: "Computer Science",
-    degree: "Bachelor of Science",
-    positions: "Student Council Representative, Coding Club President",
-  },
-  professional: {
-    currentJobs: "Part-time Web Developer at TechStart, Campus Barista",
-    societyPositions: "Treasurer of Debate Society, Volunteer at Local Shelter",
-    workWithPeople: "Creative thinkers, problem solvers, and those who bring diverse perspectives",
-    beAroundPeople: "Energetic, positive, and intellectually curious individuals who enjoy deep conversations",
-  },
-  personality: {
-    hobbies: ["Photography", "Hiking", "Chess", "Coding", "Reading"],
-    talents: ["Web Development", "Public Speaking", "Creative Writing", "UI/UX Design"],
-    achievements: "Dean's List 2022-2023, 1st Place Hackathon 2022, Published Research Paper on AI Ethics",
-  },
-  socialLinks: {
-    website: "https://alexjohnson.dev",
-    github: "github.com/alexj",
-    linkedin: "linkedin.com/in/alexjohnson",
-    twitter: "twitter.com/alexj",
-    instagram: "instagram.com/alex.johnson",
-  },
-  activity: {
-    posts: 24,
-    collaborations: 5,
-    connections: 87,
-  },
-}
+import { User as Usermodel} from "./model/User";
+
+
+
+
 
 export default function ProfileViewEnhanced() {
+  const { user: authUser  } = useAuth()
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [user, setUser] = useState(userData)
+  const [user, setUser] = useState<Usermodel | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleProfileUpdate = (updatedData: typeof userData) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      // Only fetch if we have an authenticated user with a UID
+      if (authUser?.uid)  {
+        const fetchProfileData = async () => {
+          setIsLoading(true)
+          setError(null)
+          try {
+            // Use the environment variable for the base URL
+            const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+            const response = await fetch(`${baseUrl}/profile/get-profile/
+              `, {
+              method: "GET",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json",
+             
+              },
+            })
+
+            if (!response.ok) {
+              const errorData = await response.json()
+              throw new Error(errorData.message || "Failed to fetch profile data")
+            }
+
+            const data: Usermodel = await response.json()
+            console.log("Fetched profile data:", data)
+            console.log('fetch data',data);
+            setUser(data);
+          } catch (err: any) {
+            setError(err.message)
+          } finally {
+            setIsLoading(false)
+          }
+        }
+
+        await fetchProfileData()
+      } else if (!authUser) {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [authUser])
+
+  console.log(user);
+
+  const handleProfileUpdate = (updatedData: Usermodel) => {
     setUser(updatedData)
     setIsEditDialogOpen(false)
+    // TODO: Add a fetch call to your backend to save the updated data
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center text-center text-red-500">
+        <p>Error loading profile: {error}</p>
+      </div>
+    )
+  }
+
+  if (!user) return null 
+
   return (
+    
+    
     <ProtectedRoute>
     <div className="container mx-auto py-6 px-4 md:px-6">
       {/* Profile Header */}
@@ -86,15 +125,16 @@ export default function ProfileViewEnhanced() {
 
         <div className="absolute top-32 left-8 flex items-end">
           <Avatar className="h-32 w-32 border-4 border-background">
-            <AvatarImage src={user.profilePicture || "/placeholder.svg"} alt={user.fullName} />
-            <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
-          </Avatar>
+  <AvatarImage src={user?.profilePicture || "/profile_Pic/nopic.jpg"} alt={user?.fullName || "User"} />
+  <AvatarFallback>{user?.fullName?.charAt(0) || "U"}</AvatarFallback>
+</Avatar>
+
         </div>
 
         <div className="mt-4 flex flex-col md:flex-row justify-between items-start md:items-center">
           <div className="ml-40">
-            <h1 className="text-3xl font-bold tracking-tight">{user.fullName}</h1>
-            <p className="text-muted-foreground">@{user.nickname}</p>
+            <h1 className="text-3xl font-bold tracking-tight">{user?.fullName || "User"}</h1>
+            <p className="text-muted-foreground">@{user?.degreeCard || "N/A"}</p>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0 ml-40 md:ml-0 z-10">
             <Button variant="outline" size="sm" className="flex items-center gap-1">
@@ -102,7 +142,7 @@ export default function ProfileViewEnhanced() {
               Share
             </Button>
             <Button
-              onClick={() => setIsEditDialogOpen(true)}
+              onClick={() => setIsEditDialogOpen(!isEditDialogOpen)}
               className="bg-gradient-to-r from-purple-600 to-blue-500 text-white flex items-center gap-1"
               size="sm"
             >
@@ -118,8 +158,8 @@ export default function ProfileViewEnhanced() {
         <CardContent className="py-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex-1">
-              <p className="text-sm font-medium mb-2">Profile Completeness: {user.profileCompleteness}%</p>
-              <Progress value={user.profileCompleteness} className="h-2" />
+              <p className="text-sm font-medium mb-2">Profile Completeness: {user?.profileCompleteness || 50}%</p>
+              <Progress value={user?.profileCompleteness || 50} className="h-2" />
             </div>
             <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
               Complete Profile
@@ -131,50 +171,31 @@ export default function ProfileViewEnhanced() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left Panel */}
         <div className="md:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <User className="h-5 w-5 mr-2" />
-                About
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Heart className="h-4 w-4 text-pink-500" />
-                <span className="text-sm">{user.relationshipStatus}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{user.location}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Joined {user.joinDate}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{user.university.name}</span>
-              </div>
+         <Card>
+  <CardHeader>
+    <CardTitle className="flex items-center">
+      <User className="h-5 w-5 mr-2" />
+      About
+    </CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-4">
+    <div className="text-sm text-muted-foreground">{user?.whoAmI || "Tell us who you are..."}</div>
 
-              <div className="pt-2">
-                <p className="text-sm font-medium mb-2">Activity</p>
-                <div className="flex justify-between text-sm">
-                  <div className="text-center">
-                    <p className="font-bold">{user.activity.posts}</p>
-                    <p className="text-xs text-muted-foreground">Posts</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="font-bold">{user.activity.collaborations}</p>
-                    <p className="text-xs text-muted-foreground">Collabs</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="font-bold">{user.activity.connections}</p>
-                    <p className="text-xs text-muted-foreground">Connections</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="flex items-center gap-2">
+      <Heart className="h-4 w-4 text-pink-500" />
+      <span className="text-sm">{user.relationshipState || "Single?"}</span>
+    </div>
+
+    <div className="flex items-center gap-2">
+      <GraduationCap className="h-4 w-4 text-muted-foreground" />
+      <span className="text-sm">{user.university?.name || "University not set"}</span>
+    </div>
+    <div className="text-sm text-muted-foreground">
+      {user.university?.faculty || "N/A"} - {user.university?.degree || "N/A"} ({user.university?.universityYear || "N/A"})
+    </div>
+  </CardContent>
+</Card>
+
 
           <Card>
             <CardHeader>
@@ -185,21 +206,21 @@ export default function ProfileViewEnhanced() {
             </CardHeader>
             <CardContent className="space-y-2">
               <div>
-                <p className="font-medium">{user.university.name}</p>
-                <p className="text-sm text-muted-foreground">{user.university.faculty}</p>
+                <div className="text-sm">{user?.university?.name || "N/A"}</div>
+                <p className="text-sm text-muted-foreground">{user?.university?.faculty || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm font-medium">Degree</p>
-                <p className="text-sm text-muted-foreground">{user.university.degree}</p>
+                <p className="text-sm text-muted-foreground">{user?.university?.degree || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm font-medium">Positions Held at University</p>
-                <p className="text-sm text-muted-foreground">{user.university.positions}</p>
+                <p className="text-sm text-muted-foreground">{user?.university?.positions}</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
                 <LinkIcon className="h-5 w-5 mr-2" />
@@ -207,17 +228,13 @@ export default function ProfileViewEnhanced() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {user.socialLinks.website && (
-                <a
-                  href={user.socialLinks.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm hover:text-primary"
-                >
-                  <LinkIcon className="h-4 w-4" />
-                  <span>{user.socialLinks.website}</span>
-                </a>
-              )}
+              {user?.socialLinks?.github && (
+  <a href={`https://${user.socialLinks.github}`} target="_blank" rel="noopener noreferrer">
+    <Github className="h-4 w-4" />
+    <span>{user.socialLinks.github}</span>
+  </a>
+)}
+
               {user.socialLinks.github && (
                 <a
                   href={`https://${user.socialLinks.github}`}
@@ -263,7 +280,7 @@ export default function ProfileViewEnhanced() {
                 </a>
               )}
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Right Panel */}
@@ -271,9 +288,9 @@ export default function ProfileViewEnhanced() {
           <Tabs defaultValue="about" className="w-full">
             <TabsList className="w-full justify-start">
               <TabsTrigger value="about">About</TabsTrigger>
-              <TabsTrigger value="posts">Posts</TabsTrigger>
+              {/* <TabsTrigger value="posts">Posts</TabsTrigger>
               <TabsTrigger value="collabs">Collaborations</TabsTrigger>
-              <TabsTrigger value="connections">Connections</TabsTrigger>
+              <TabsTrigger value="connections">Connections</TabsTrigger> */}
             </TabsList>
 
             <TabsContent value="about" className="space-y-6 mt-6">
@@ -287,11 +304,11 @@ export default function ProfileViewEnhanced() {
                 <CardContent className="space-y-4">
                   <div>
                     <p className="text-sm font-medium">What Jobs Do You Have</p>
-                    <p className="text-muted-foreground">{user.professional.currentJobs}</p>
+                    <p className="text-muted-foreground">{user?.professional?.currentJobs}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium">What Positions Do You Hold in Society</p>
-                    <p className="text-muted-foreground">{user.professional.societyPositions}</p>
+                    <p className="text-muted-foreground">{user?.professional?.societyPositions}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -306,11 +323,11 @@ export default function ProfileViewEnhanced() {
                 <CardContent className="space-y-4">
                   <div>
                     <p className="text-sm font-medium">What Kind of People Do You Like to Work With</p>
-                    <p className="text-muted-foreground">{user.professional.workWithPeople}</p>
+                    <p className="text-muted-foreground">{user?.professional?.workWithPeople}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium">What Kind of People Do You Like to Be Around</p>
-                    <p className="text-muted-foreground">{user.professional.beAroundPeople}</p>
+                    <p className="text-muted-foreground">{user?.professional?.beAroundPeople}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -322,36 +339,25 @@ export default function ProfileViewEnhanced() {
                     Personality & Skills
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium mb-2">Hobbies</p>
-                    <div className="flex flex-wrap gap-2">
-                      {user.personality.hobbies.map((hobby, index) => (
-                        <Badge key={index} variant="secondary" className="rounded-full">
-                          {hobby}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium mb-2">Talents</p>
-                    <div className="flex flex-wrap gap-2">
-                      {user.personality.talents.map((talent, index) => (
-                        <Badge
-                          key={index}
-                          variant="outline"
-                          className="rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 text-purple-500 border-purple-200 dark:border-purple-800"
-                        >
-                          {talent}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Achievements</p>
-                    <p className="text-muted-foreground">{user.personality.achievements}</p>
-                  </div>
-                </CardContent>
+               <CardContent className="space-y-4">
+  {/* Hobbies & Talents can go here */}
+
+  <div>
+    <p className="text-sm font-medium">Interests</p>
+    <p className="text-muted-foreground">{user.interests || "No interests specified."}</p>
+  </div>
+
+  <div>
+    <p className="text-sm font-medium">Achievements</p>
+    <p className="text-muted-foreground">{user.achievements || "No achievements listed."}</p>
+  </div>
+
+  <div>
+    <p className="text-sm font-medium">Abilities</p>
+    <p className="text-muted-foreground">{user.abilities || "No abilities added."}</p>
+  </div>
+</CardContent>
+
               </Card>
             </TabsContent>
 
@@ -410,7 +416,7 @@ export default function ProfileViewEnhanced() {
       <EditProfileDialog
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
-        userData={user}
+        userData={user as Usermodel}
         onSave={handleProfileUpdate}
       />
     </div>

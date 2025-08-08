@@ -21,12 +21,12 @@ export function DesktopNav() {
   const pathname = usePathname()
 
   const navItems = [
-    { href: "/search", label: "Discover", icon: Search },
+    { href: "/discover", label: "Discover", icon: Search },
     { href: "/collab", label: "Collaborations", icon: Users },
     { href: "/messages", label: "Messages", icon: MessageSquare },
   ]
 
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -42,12 +42,12 @@ export function DesktopNav() {
   return (
     <div className="hidden w-full items-center justify-between md:flex">
       <div className="flex items-center gap-6">
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href={`/profile/${user?.uid ?? ""}`} className="flex items-center space-x-2">
           <span className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-2xl font-bold text-transparent">
             Linkora
           </span>
         </Link>
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-6"> 
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -75,7 +75,7 @@ export function DesktopNav() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href="/profile">View Profile</Link>
+              <Link href="/">View Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/settings">Settings</Link>
