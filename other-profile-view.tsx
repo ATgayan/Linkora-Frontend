@@ -38,8 +38,7 @@ import AchievementCard from "@/components/profile/Achievements"
 import AboutCard from "@/components/profile/AboutCard"
 import SocialPreferences from "./components/profile/SocialPreferences"
 import PersonalitySkillsCard from "@/components/profile/Skill"
-import Diary from "@/components/profile/Diary"
-import AutherDiary from "./components/profile/Frinds_Diary"
+import DiaryPostsCard from "./components/profile/Frinds_Diary"
 
 // User model interface (matching your User model)
 interface UserModel {
@@ -386,7 +385,7 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
             </TabsList>
 
             <TabsContent value="about" className="space-y-6 mt-6">
-              <AchievementCard achievement={user?.personality?.achievements || []}/>
+              <AchievementCard achievement={(user?.personality?.achievements || []).map(title => ({ title }))}/>
               <SocialPreferences user={{
                 socialPreferences: {
                   workWithPeople: user?.socialPreferences?.workWithPeople || "Not specified",
@@ -400,7 +399,7 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
             </TabsContent>
 
             <TabsContent value="post" className="space-y-6 mt-6">
-              <AutherDiary uid={user.uid} />
+              <DiaryPostsCard userId={user.uid} />
             </TabsContent>
           </Tabs>
         </div>
