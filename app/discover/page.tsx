@@ -79,12 +79,11 @@ export default function SearchPage() {
    const matchesSearch =
   searchQuery === "" ||
   (typeof user.fullName === "string" && user.fullName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-  (typeof user.whoAmI === "string" && user.whoAmI.toLowerCase().includes(searchQuery.toLowerCase())) ||
   (typeof user.university?.name === "string" && user.university.name.toLowerCase().includes(searchQuery.toLowerCase()))
 
     const matchesTags =
       selectedTags.length === 0 ||
-      selectedTags.some((tag) => user.skills?.includes(tag))
+      selectedTags.some((tag) => user.personality?.skills?.includes(tag))
 
     return matchesSearch && matchesTags
   })
@@ -171,25 +170,28 @@ export default function SearchPage() {
           className="border rounded-xl shadow-sm bg-white dark:bg-gray-950 p-5 transition-all hover:shadow-md hover:border-primary/40"
         >
           <UserCard
-            user={{
-              ...user,
-              uid: user.uid,
-              name: user.fullName,
-              photoURL: user.profilePicture,
-              bio: user.whoAmI,
-              skills: user.skills,
-              university: {
-                name: user.university?.name,
-                faculty: user.university?.faculty,
-                degree: user.university?.degree
-              }
-            }}
-            onConnect={handleConnect}
-          />
+  user={{
+    ...user,
+    uid: user.uid,
+    name: user.fullName,
+    photoURL: user.profilePicture || undefined,
+    bio: user.personality?.whoAmI || undefined,
+    skills: user.personality?.skills,
+    university: {
+      name: user.university?.name || undefined,
+      faculty: user.university?.faculty || undefined,
+      degree: user.university?.degree || undefined,
+    },
+    location: user.location ?? undefined,   // <-- convert null to undefined here
+    // similarly for other properties if needed
+  }}
+  onConnect={handleConnect}
+/>
 
-          {user.achievements && (
+
+          {user.personality?.achievements && (
             <p className="text-xs mt-3 italic text-primary/80">
-              🏆 {user.achievements}
+              🏆 {user.personality.achievements.map(a => a.title).join(', ')}
             </p>
           )}
 
