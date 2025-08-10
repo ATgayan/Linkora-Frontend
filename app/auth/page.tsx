@@ -62,7 +62,7 @@ export default function AuthPage() {
         if (!response.ok) { throw new Error("Failed to create session on the backend.") }
         // 2. Initialize chat client
         await initChat(user);
-        router.push(`/profile/${userCredential.user.uid}`) // redirect to profile with uid param
+        router.push(`/profile/${userCredential.user.uid}`)
       } else {
         throw new Error("Login failed to return user information.")
       }
