@@ -105,28 +105,19 @@ export default function AuthPage() {
           universityYear,
           positions: "No positions yet"
         },
-        professional: {
-          currentJobs: "Part-time Web Developer at TechStart, Campus Barista",
-          societyPositions: "Treasurer of Debate Society, Volunteer at Local Shelter",
-          workWithPeople: "Creative thinkers, problem solvers, and those who bring diverse perspectives",
-          beAroundPeople: "Energetic, positive, and intellectually curious individuals who enjoy deep conversations"
-        },
+        
         personality: {
           hobbies: ["Photography", "Hiking", "Chess", "Coding", "Reading"],
-          talents: ["Web Development", "Public Speaking", "Creative Writing", "UI/UX Design"]
+          interests: null,
+          type: null,
+          achievements: null
         },
-        socialLinks: {
-          github: "github.com/alexj",
-          linkedin: "linkedin.com/in/alexjohnson",
-          twitter: "twitter.com/alexj",
-          instagram: "instagram.com/alex.johnson",
-          personalWebsite: "https://alexjohnson.dev"
-        },
+      
         activity: {
           posts: 24,
-          collaborations: 5,
+        
         },
-        achievements: "Dean's List 2022-2023, 1st Place Hackathon 2022, Published Research Paper on AI Ethics",
+        
       }
 
 
