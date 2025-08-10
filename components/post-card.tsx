@@ -1,160 +1,69 @@
-"use client"
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-import * as React from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Heart, MessageCircle, Share2, MoreHorizontal, Users } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
-interface PostCardProps {
-  post: {
-    id: number
-    user: {
-      name: string
-      avatar: string
-      university: string
-    }
-    content: string
-    image?: string
-    tags: string[]
-    status: "Have" | "Find"
-    likes: number
-    comments: number
-    timeAgo: string
-  }
-  onLike?: (postId: number) => void
-  onComment?: (postId: number) => void
-  onShare?: (postId: number) => void
-  onCollaborate?: (post: any) => void
+type Post = {
+  id: number
+  user: {
+    name: string | null
+    avatar: string | null
+    university: string | null
+  } | null
+  content: string | null
+  image?: string | null
+  tags: string[] | null
+  status: 'Have' | 'Find' | null
+  likes: number | null
+  comments: number | null
+  timeAgo: string | null
 }
 
-export function PostCard({ post, onLike, onComment, onShare, onCollaborate }: PostCardProps) {
-  const [isLiked, setIsLiked] = React.useState(false)
-  const [likeCount, setLikeCount] = React.useState(post.likes)
+type Props = {
+  posts?: Post[]
+}
 
-  const handleLike = () => {
-    setIsLiked(!isLiked)
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1)
-    onLike?.(post.id)
-  }
-
-  const handleComment = () => {
-    onComment?.(post.id)
-  }
-
-  const handleShare = () => {
-    onShare?.(post.id)
-  }
-
-  const handleCollaborate = () => {
-    onCollaborate?.(post)
-  }
-
+export default function PostsCard({ posts = [] }: Props) {
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={post.user.avatar || "/placeholder.svg"} alt={post.user.name} />
-              <AvatarFallback>{post.user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="font-semibold text-sm">{post.user.name}</h3>
-              <p className="text-xs text-muted-foreground">{post.user.university}</p>
-              <p className="text-xs text-muted-foreground">{post.timeAgo}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge
-              variant={post.status === "Have" ? "default" : "secondary"}
-              className={`text-xs ${
-                post.status === "Have"
-                  ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white"
-                  : "border-orange-500 bg-orange-500/10 text-orange-500"
-              }`}
-            >
-              {post.status === "Have" ? "Offering" : "Looking For"}
-            </Badge>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleCollaborate}>
-                  <Users className="mr-2 h-4 w-4" />
-                  <span>Collaborate</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleShare}>
-                  <Share2 className="mr-2 h-4 w-4" />
-                  <span>Share</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-500">
-                  <span>Report</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+    <Card className="max-w-lg mx-auto">
+      <CardHeader>
+        <CardTitle>Life's Interesting Moments</CardTitle>
       </CardHeader>
-
-      <CardContent className="p-4 pt-0">
-        <p className="text-sm mb-3 leading-relaxed">{post.content}</p>
-
-        {post.image && (
-          <div className="mb-3 rounded-lg overflow-hidden">
-            <img src={post.image || "/placeholder.svg"} alt="Post content" className="w-full h-48 object-cover" />
+      <CardContent>
+        {posts.length === 0 ? (
+          <p className="text-muted-foreground text-center">No posts to show.</p>
+        ) : (
+          <div className="max-h-96 overflow-y-auto space-y-4 px-2">
+            {posts.map(post => (
+              <div
+                key={post.id}
+                className="border rounded-md p-4 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <h4 className="font-semibold text-lg mb-1">
+                  {post.user?.name ?? 'Anonymous'}
+                </h4>
+                <p className="text-xs text-muted-foreground mb-2">
+                  {post.user?.university ?? 'University not specified'} • {post.timeAgo ?? 'some time ago'}
+                </p>
+                <p className="text-sm text-gray-700">
+                  {post.content ?? 'No content provided.'}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {(post.tags && post.tags.length > 0 ? post.tags : ['No tags']).map((tag, i) => (
+                    <span
+                      key={i}
+                      className="inline-block bg-blue-200 text-blue-800 text-xs px-2 py-0.5 rounded"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs text-muted-foreground flex justify-between">
+                  <span>Status: {post.status ?? 'Unknown'}</span>
+                  <span>👍 {post.likes ?? 0} Likes</span>
+                  <span>💬 {post.comments ?? 0} Comments</span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
-
-        <div className="flex flex-wrap gap-2 mb-4">
-          {post.tags.map((tag, index) => (
-            <Badge key={index} variant="secondary" className="rounded-full text-xs">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-between pt-3 border-t">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`flex items-center gap-2 ${isLiked ? "text-red-500" : ""}`}
-              onClick={handleLike}
-            >
-              <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-              <span className="text-sm">{likeCount}</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="flex items-center gap-2" onClick={handleComment}>
-              <MessageCircle className="h-4 w-4" />
-              <span className="text-sm">{post.comments}</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="flex items-center gap-2" onClick={handleShare}>
-              <Share2 className="h-4 w-4" />
-              <span className="text-sm">Share</span>
-            </Button>
-          </div>
-          <Button
-            size="sm"
-            className="bg-gradient-to-r from-purple-600 to-blue-500 text-white"
-            onClick={handleCollaborate}
-          >
-            <Users className="h-4 w-4 mr-1" />
-            Collaborate
-          </Button>
-        </div>
       </CardContent>
     </Card>
   )

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test": "jest",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -12,6 +13,7 @@
     "@chatscope/chat-ui-kit-react": "^2.1.1",
     "@chatscope/chat-ui-kit-styles": "^1.4.0",
     "@google/gemini-cli": "^0.1.9",
+    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-accordion": "1.2.11",
     "@radix-ui/react-alert-dialog": "1.1.14",
@@ -60,6 +62,7 @@
     "react-resizable-panels": "^3.0.2",
     "recharts": "2.15.3",
     "sonner": "^2.0.5",
+    "stream-chat": "^9.14.0",
     "stream-chat-react": "^13.3.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
@@ -67,17 +70,19 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-jest": "^30.0.2",
     "identity-obj-proxy": "^3.0.0",
-    "jest": "^30.0.2",
+    "jest": "^30.0.5",
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
+    "ts-jest": "^29.4.1",
     "typescript": "^5"
   }
 }

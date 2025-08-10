@@ -7,9 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { CollaborationModal } from "@/components/collaboration-modal"
-import { PostCollaborationModal } from "@/components/post-collaboration-modal"
-import { CollaborationDetailModal } from "@/components/collaboration-detail-modal"
 import { Edit, Trash2, Users, Search, Filter } from "lucide-react"
 import ProtectedRoute from "@/components/ProtectedRoute"
 
@@ -525,28 +522,7 @@ export default function CollabPage() {
       </div>
 
       {/* Modals */}
-      <CollaborationModal
-        isOpen={isCollabModalOpen}
-        onClose={() => setIsCollabModalOpen(false)}
-        post={selectedCollab}
-      />
-
-      <PostCollaborationModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)} />
-      <CollaborationDetailModal
-        isOpen={isCollabDetailOpen}
-        onClose={() => setIsCollabDetailOpen(false)}
-        collaboration={selectedCollaboration}
-        onApply={() => {
-          setIsCollabDetailOpen(false)
-          setSelectedCollab({
-            id: selectedCollaboration.id,
-            user: selectedCollaboration.author,
-            content: selectedCollaboration.description,
-            tags: selectedCollaboration.tags,
-          })
-          setIsCollabModalOpen(true)
-        }}
-      />
+     
       </ProtectedRoute>
     </>
   )

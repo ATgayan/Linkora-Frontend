@@ -1,16 +1,18 @@
 "use client"
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckIcon, SearchIcon, XIcon } from "lucide-react";
-import { UserCard } from "@/components/user-card";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import { Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react";
 
-import {User} from "../../model/User";
+const UserCard = dynamic(() => import("@/components/user-card").then(mod => mod.UserCard), { ssr: false });
+const ProtectedRoute = dynamic(() => import("@/components/ProtectedRoute").then(mod => mod.default), { ssr: false });
+
+import { User } from "../../model/User";
 
 
 export default function SearchPage() {
@@ -77,12 +79,11 @@ export default function SearchPage() {
    const matchesSearch =
   searchQuery === "" ||
   (typeof user.fullName === "string" && user.fullName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-  (typeof user.whoAmI === "string" && user.whoAmI.toLowerCase().includes(searchQuery.toLowerCase())) ||
   (typeof user.university?.name === "string" && user.university.name.toLowerCase().includes(searchQuery.toLowerCase()))
 
     const matchesTags =
       selectedTags.length === 0 ||
-      selectedTags.some((tag) => user.skills?.includes(tag))
+      selectedTags.some((tag) => user.personality?.skills?.includes(tag))
 
     return matchesSearch && matchesTags
   })
@@ -154,71 +155,74 @@ export default function SearchPage() {
         <Tabs defaultValue="people">
           <TabsList className="mb-4">
             <TabsTrigger value="people">People</TabsTrigger>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="universities">Universities</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="people">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {loading ? (
-                <div className="flex h-screen items-center justify-center">
+         <TabsContent value="people">
+  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {loading ? (
+      <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
-              ) : filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <div
-                    key={user.uid}
-                    className=" border p-4 rounded-xl shadow-sm bg-white dark:bg-gray-950"
+    ) : filteredUsers.length > 0 ? (
+      filteredUsers.map((user) => (
+        <div
+          key={user.uid}
+          className="border rounded-xl shadow-sm bg-white dark:bg-gray-950 p-5 transition-all hover:shadow-md hover:border-primary/40"
+        >
+          <UserCard
+  user={{
+    ...user,
+    uid: user.uid,
+    name: user.fullName,
+    photoURL: user.profilePicture || undefined,
+    bio: user.personality?.whoAmI || undefined,
+    skills: user.personality?.skills,
+    university: {
+      name: user.university?.name || undefined,
+      faculty: user.university?.faculty || undefined,
+      degree: user.university?.degree || undefined,
+    },
+    location: user.location ?? undefined,   // <-- convert null to undefined here
+    // similarly for other properties if needed
+  }}
+  onConnect={handleConnect}
+/>
+
+
+          {user.personality?.achievements && (
+            <p className="text-xs mt-3 italic text-primary/80">
+              🏆 {user.personality.achievements.map(a => a.title).join(', ')}
+            </p>
+          )}
+
+          {Array.isArray(user.personality?.hobbies) &&
+            user.personality.hobbies.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {user.personality.hobbies.map((hobby, idx) => (
+                  <Badge
+                    key={idx}
+                    className="rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                   >
-                    <UserCard user={{...user,uid:user.uid, name: user.fullName,photoURL: user.profilePicture,bio:user.whoAmI,skills:user.skills,university:{name:user.university?.name,faculty:user.university?.faculty,degree:user.university?.degree}}} onConnect={handleConnect} />
+                    {hobby}
+                  </Badge>
+                ))}
+              </div>
+            )}
+        </div>
+      ))
+    ) : (
+      <div className="col-span-full flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+        <p className="mb-2 text-muted-foreground">
+          No users match your search criteria
+        </p>
+        <Button variant="outline" size="sm" onClick={clearFilters}>
+          Clear Filters
+        </Button>
+      </div>
+    )}
+  </div>
+</TabsContent>
 
-                    {user.achievements && (
-                      <p className="text-xs mt-3 italic text-green-500">
-                        🏆 {user.achievements}
-                      </p>
-                    )}
-
-                    {Array.isArray(user.personality?.hobbies) &&
-                      user.personality.hobbies.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {user.personality.hobbies.map((hobby, idx) => (
-                            <Badge
-                              key={idx}
-                              className="rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                            >
-                              {hobby}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-full flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-                  <p className="mb-2 text-muted-foreground">
-                    No users match your search criteria
-                  </p>
-                  <Button variant="outline" size="sm" onClick={clearFilters}>
-                    Clear Filters
-                  </Button>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="projects">
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-              <p className="mb-2 text-muted-foreground">Project search coming soon</p>
-              <Button variant="outline" size="sm">View Collaboration Board</Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="universities">
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-              <p className="mb-2 text-muted-foreground">University search coming soon</p>
-              <Button variant="outline" size="sm">Browse People Instead</Button>
-            </div>
-          </TabsContent>
         </Tabs>
       </div>
     </ProtectedRoute>
