@@ -192,7 +192,18 @@ export default function ProfileViewEnhanced() {
 
           <div className="mt-4 flex flex-col md:flex-row justify-between items-start md:items-center">
             <div className="ml-40">
-              <h1 className="text-3xl font-bold tracking-tight">{user?.fullName || "User"}</h1>
+              <h1 className="flex items-center text-3xl font-bold tracking-tight">
+  {user?.fullName || "User"}
+  
+  {user?.profile_state === "Banned" && (
+    <span className="ml-2 inline-block w-4 h-4 mt-2 bg-red-600 rounded-full" title="Banned"></span>
+  )}
+  
+  {user?.profile_state === "Approved" && (
+    <span className="ml-2 inline-block w-4 h-4 mt-2 bg-green-600 rounded-full" title="Approved"></span>
+  )}
+</h1>
+
               <p className="text-muted-foreground">@{user?.degreeCard || "N/A"}</p>
             </div>
             <div className="flex gap-2 mt-4 md:mt-0 ml-40 md:ml-0 z-10">

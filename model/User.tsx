@@ -62,6 +62,7 @@ export type User = {
  role?: string 
  register_state?: string
  userquality?: string
+ profile_state?: string
 
  
 }
