@@ -44,6 +44,7 @@ import DiaryPostsCard from "./components/profile/Frinds_Diary"
 interface UserModel {
   uid: string;
   fullName: string;
+  profile_state?: string 
   email: string;
   profilePicture?: string;
   bannerImage?: string;
@@ -103,6 +104,7 @@ const initialUserData: UserModel = {
   uid: '',
   fullName: 'Loading...',
   email: '',
+  
   university: {
     name: '',
     faculty: '',
@@ -296,7 +298,17 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
 
         <div className="mt-4 flex flex-col md:flex-row justify-between items-start md:items-center">
           <div className="ml-40">
-            <h1 className="text-3xl font-bold tracking-tight">{user?.fullName || "User"}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+               {user?.fullName || "User"}
+  
+  {user?.profile_state === "Banned" && (
+    <span className="ml-2 inline-block w-4 h-4 mt-2 bg-red-600 rounded-full" title="Banned"></span>
+  )}
+  
+  {user?.profile_state === "Approved" && (
+    <span className="ml-2 inline-block w-4 h-4 mt-2 bg-green-600 rounded-full" title="Approved"></span>
+  )}
+            </h1>
             <p className="text-muted-foreground">@{user?.degreeCard || "N/A"}</p>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0 ml-40 md:ml-0 z-10">
@@ -385,7 +397,7 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
             </TabsList>
 
             <TabsContent value="about" className="space-y-6 mt-6">
-              <AchievementCard achievement={(user?.personality?.achievements || []).map(title => ({ title }))}/>
+<AchievementCard achievement={user?.personality?.achievements as any || []} />
               <SocialPreferences user={{
                 socialPreferences: {
                   workWithPeople: user?.socialPreferences?.workWithPeople || "Not specified",
