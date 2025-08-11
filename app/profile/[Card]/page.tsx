@@ -9,11 +9,9 @@ import { auth } from '@/lib/firebase';
 
 // Lazy load components (optional for performance)
 const ProfileViewEnhanced = dynamic(() => import('@/profile-view-enhanced'), {
-  loading: () => <p>Loading your profile...</p>,
   ssr: false,
 });
 const OtherProfileView = dynamic(() => import('@/other-profile-view'), {
-  loading: () => <p>Loading profile...</p>,
   ssr: false,
 });
 
