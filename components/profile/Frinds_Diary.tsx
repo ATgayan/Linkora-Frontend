@@ -43,15 +43,13 @@ export default function DiaryPostsCard({ userId }: Props) {
           return;
         }
 
-        const token = await user.getIdToken();
 
         // Updated API call to match backend
-        const response = await fetch(`${baseurl}/friends-posts/${userId}`, {
+        const response = await fetch(`${baseurl}/feed/friends-posts/${userId}`, {
           method: "GET",
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -61,7 +59,10 @@ export default function DiaryPostsCard({ userId }: Props) {
         }
 
         const posts: Post[] = await response.json();
-        setPostList(posts);
+       
+             setPostList(posts);
+        
+       
       } catch (error: any) {
         alert(error.message || "Error loading posts");
       } finally {

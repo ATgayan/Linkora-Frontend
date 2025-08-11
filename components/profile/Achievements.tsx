@@ -9,7 +9,7 @@ import {
 import { Trophy } from 'lucide-react'
 
 type achievement = {
-  title: string
+  title?: string
   description?: string
   year?: string
 };
