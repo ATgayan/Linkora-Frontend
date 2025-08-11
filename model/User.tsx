@@ -21,6 +21,7 @@ export type User = {
   uid: string
   fullName: string
   degreeCard?: string | null
+  Gender?: string | null
   profilePicture?: string | null
   bannerImage?: string | null
   email?: string | null
