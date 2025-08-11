@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error("Token refresh error:", error);
-      // Don't throw here to avoid disrupting the auth flow
+
     }
   }, [baseUrl]);
 

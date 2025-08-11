@@ -79,23 +79,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
         </div>
       </div>
 
-      {bio && (
-        <p className="text-sm text-muted-foreground mt-4 line-clamp-3">{bio}</p>
-      )}
-
-      {skills.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-4">
-          {skills.map((skill, idx) => (
-            <Badge
-              key={idx}
-              variant="secondary"
-              className="rounded-full text-sm px-3 py-1"
-            >
-              {skill}
-            </Badge>
-          ))}
-        </div>
-      )}
+     
 
       <div className="mt-6 flex gap-3">
         <Button
