@@ -48,13 +48,17 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
   return (
     <div className="w-full max-w-md mx-auto rounded-2xl border bg-card p-6 shadow-lg transition hover:shadow-xl dark:border-border">
       <div className="flex items-center gap-4">
-        <Image
-          src={photoURL || '/default-avatar.png'}
-          alt={name}
-          width={72}
-          height={72}
-          className=" h-20 w-20 rounded-full border object-cover"
-        />
+       <div className=" w-20 h-20 rounded-full border overflow-hidden flex items-center justify-center object-cover">
+  <Image
+    src={photoURL || '/default-avatar.png'}
+    alt={name}
+    width={80}
+    height={60}
+    className="object-cover"
+  />
+</div>
+
+
 
         <div>
           <h2 className="text-xl font-semibold text-foreground">{name}</h2>

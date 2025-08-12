@@ -267,7 +267,7 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
             <div className="flex flex-col items-center mb-6">
               <div className="relative w-full max-w-xl">
                 <img
-                  src={formData.bannerImage || "/banner-placeholder.svg"}
+                  src={formData.bannerImage || "/Banner_image/image.png"}
                   alt="Banner"
                   className="w-full h-32 object-cover rounded-lg border"
                 />

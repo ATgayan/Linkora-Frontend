@@ -14,16 +14,27 @@ const ProtectedRoute = dynamic(() => import("@/components/ProtectedRoute").then(
 
 import { User } from "../../model/User";
 
-
 export default function SearchPage() {
   const [selectedTags, setSelectedTags] = React.useState<string[]>([])
   const [searchQuery, setSearchQuery] = React.useState("")
   const [loading, setLoading] = React.useState(true)
   const [users, setUsers] = React.useState<User[]>([])
 
-  const allTags = [
+  // Get all unique hobbies from users for filter options
+  const allTags = React.useMemo(() => {
+    const hobbiesSet = new Set<string>()
+    users.forEach(user => {
+      if (user.personality?.hobbies && Array.isArray(user.personality.hobbies)) {
+        user.personality.hobbies.forEach(hobby => hobbiesSet.add(hobby))
+      }
+    })
+    return Array.from(hobbiesSet).sort()
+  }, [users])
+
+  // Fallback static tags if no users loaded yet
+  const staticTags = [
     "Game Dev",
-    "UI/UX",
+    "UI/UX", 
     "Design",
     "Music",
     "Production",
@@ -74,32 +85,42 @@ export default function SearchPage() {
     fetchUsers()
   }, [])
 
-  
-  const filteredUsers = users.filter((user) => {
-   const matchesSearch =
-  searchQuery === "" ||
-  (typeof user.fullName === "string" && user.fullName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-  (typeof user.university?.name === "string" && user.university.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  // Fixed filtering logic - now filters by hobbies
+  const filteredUsers = React.useMemo(() => {
+    return users.filter((user) => {
+      // Search filter - check name, university name, skills, and hobbies
+      const matchesSearch = 
+        searchQuery === "" ||
+        (user.fullName && user.fullName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (user.university?.name && user.university.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (user.personality?.skills && user.personality.skills.some(skill => 
+          skill.toLowerCase().includes(searchQuery.toLowerCase())
+        )) ||
+        (user.personality?.hobbies && user.personality.hobbies.some(hobby => 
+          hobby.toLowerCase().includes(searchQuery.toLowerCase())
+        ))
 
-    const matchesTags =
-      selectedTags.length === 0 ||
-      selectedTags.some((tag) => user.personality?.skills?.includes(tag))
+      // Tag filter - if no tags selected, show all; otherwise check if user has any of the selected hobbies
+      const matchesTags = 
+        selectedTags.length === 0 ||
+        (user.personality?.hobbies && Array.isArray(user.personality.hobbies) && 
+         selectedTags.some(tag => user?.personality?.hobbies?.includes(tag)))
 
-    return matchesSearch && matchesTags
-  })
+      return matchesSearch && matchesTags
+    })
+  }, [users, searchQuery, selectedTags])
 
-  console.log(filteredUsers);
   const handleConnect = (userId: string) => {
     console.log(`Connection request sent to user ${userId}`)
   }
 
-  if(loading){
+  if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
-        </div>
+      </div>
     )
-  }else{
+  }
 
   return (
     <ProtectedRoute>
@@ -111,12 +132,13 @@ export default function SearchPage() {
           </p>
         </div>
 
+        {/* Search and Clear Filters */}
         <div className="mb-6 grid gap-4 md:grid-cols-4">
           <div className="md:col-span-3">
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by name, skills, or university..."
+                placeholder="Search by name, hobbies, or university..."
                 className="w-full pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -124,24 +146,55 @@ export default function SearchPage() {
             </div>
           </div>
           <div>
-            <Button variant="outline" className="w-full justify-between" onClick={clearFilters}>
+            <Button 
+              variant="outline" 
+              className="w-full justify-between" 
+              onClick={clearFilters}
+              disabled={selectedTags.length === 0 && searchQuery === ""}
+            >
               <span>Clear Filters</span>
               <XIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
+        {/* Active Filters Display */}
+        {(selectedTags.length > 0 || searchQuery) && (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Active filters:</span>
+            {searchQuery && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                Search: "{searchQuery}"
+                <XIcon 
+                  className="h-3 w-3 cursor-pointer" 
+                  onClick={() => setSearchQuery("")}
+                />
+              </Badge>
+            )}
+            {selectedTags.map(tag => (
+              <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                {tag}
+                <XIcon 
+                  className="h-3 w-3 cursor-pointer" 
+                  onClick={() => toggleTag(tag)}
+                />
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Hobbies Filter */}
         <div className="mb-6">
-          <h2 className="mb-2 font-medium">Filter by Skills</h2>
+          <h2 className="mb-2 font-medium">Filter by Hobbies</h2>
           <div className="flex flex-wrap gap-2">
-            {allTags.map((tag) => (
+            {(allTags.length > 0 ? allTags : staticTags).map((tag) => (
               <Badge
                 key={tag}
                 variant={selectedTags.includes(tag) ? "default" : "outline"}
-                className={`cursor-pointer rounded-full ${
+                className={`cursor-pointer rounded-full transition-all ${
                   selectedTags.includes(tag)
-                    ? "bg-gradient-to-r from-purple-600 to-blue-500"
-                    : ""
+                    ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600"
+                    : "hover:bg-muted"
                 }`}
                 onClick={() => toggleTag(tag)}
               >
@@ -150,6 +203,18 @@ export default function SearchPage() {
               </Badge>
             ))}
           </div>
+          {allTags.length > 0 && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Showing hobbies from {users.length} users
+            </p>
+          )}
+        </div>
+
+        {/* Results Count */}
+        <div className="mb-4 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {filteredUsers.length} {filteredUsers.length === 1 ? 'person' : 'people'} found
+          </p>
         </div>
 
         <Tabs defaultValue="people">
@@ -157,74 +222,70 @@ export default function SearchPage() {
             <TabsTrigger value="people">People</TabsTrigger>
           </TabsList>
 
-         <TabsContent value="people">
-  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    {loading ? (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-16 w-16 animate-spin text-primary" />
-      </div>
-    ) : filteredUsers.length > 0 ? (
-      filteredUsers.map((user) => (
-        <div
-          key={user.uid}
-          className="border rounded-xl shadow-sm bg-white dark:bg-gray-950 p-5 transition-all hover:shadow-md hover:border-primary/40"
-        >
-          <UserCard
-  user={{
-    ...user,
-    uid: user.uid,
-    name: user.fullName,
-    photoURL: user.profilePicture || undefined,
-    bio: user.personality?.whoAmI || undefined,
-    skills: user.personality?.skills,
-    university: {
-      name: user.university?.name || undefined,
-      faculty: user.university?.faculty || undefined,
-      degree: user.university?.degree || undefined,
-    },
-    location: user.location ?? undefined,   // <-- convert null to undefined here
-    // similarly for other properties if needed
-  }}
-  onConnect={handleConnect}
-/>
-
-
-          {user.personality?.achievements && (
-            <p className="text-xs mt-3 italic text-primary/80">
-              🏆 {user.personality.achievements.map(a => a.title).join(', ')}
-            </p>
-          )}
-
-          {Array.isArray(user.personality?.hobbies) &&
-            user.personality.hobbies.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-3">
-                {user.personality.hobbies.map((hobby, idx) => (
-                  <Badge
-                    key={idx}
-                    className="rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+          <TabsContent value="people">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => (
+                  <div
+                    key={user.uid}
+                    className="border rounded-xl shadow-sm bg-white dark:bg-gray-950 p-5 transition-all hover:shadow-md hover:border-primary/40"
                   >
-                    {hobby}
-                  </Badge>
-                ))}
-              </div>
-            )}
-        </div>
-      ))
-    ) : (
-      <div className="col-span-full flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-        <p className="mb-2 text-muted-foreground">
-          No users match your search criteria
-        </p>
-        <Button variant="outline" size="sm" onClick={clearFilters}>
-          Clear Filters
-        </Button>
-      </div>
-    )}
-  </div>
-</TabsContent>
+                    <UserCard
+                      user={{
+                        ...user,
+                        uid: user.uid,
+                        name: user.fullName,
+                        photoURL: user.profilePicture || undefined,
+                        bio: user.personality?.whoAmI || undefined,
+                        skills: user.personality?.skills,
+                        university: {
+                          name: user.university?.name || undefined,
+                          faculty: user.university?.faculty || undefined,
+                          degree: user.university?.degree || undefined,
+                        },
+                        location: user.location ?? undefined,
+                      }}
+                      onConnect={handleConnect}
+                    />
 
+                    {user.personality?.achievements && (
+                      <p className="text-xs mt-3 italic text-primary/80">
+                        🏆 {user.personality.achievements.map(a => a.title).join(', ')}
+                      </p>
+                    )}
+
+                    {Array.isArray(user.personality?.hobbies) &&
+                      user.personality.hobbies.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {user.personality.hobbies.map((hobby, idx) => (
+                            <Badge
+                              key={idx}
+                              className="rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                            >
+                              {hobby}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+                  <p className="mb-2 text-muted-foreground">
+                    {searchQuery || selectedTags.length > 0 
+                      ? "No users match your search criteria" 
+                      : "No users found"
+                    }
+                  </p>
+                  <Button variant="outline" size="sm" onClick={clearFilters}>
+                    Clear Filters
+                  </Button>
+                </div>
+              )}
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </ProtectedRoute>
   )
-}}
+}
