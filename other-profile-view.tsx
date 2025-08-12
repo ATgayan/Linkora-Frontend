@@ -6,23 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  Heart,
-  Briefcase,
   GraduationCap,
-  User,
-  Users,
-  MapPin,
-  Calendar,
-  LinkIcon,
-  Github,
-  Linkedin,
-  Twitter,
-  Instagram,
-  Share2,
   MessageSquare,
-  UserPlus,
-  Flag,
-  MoreHorizontal,
   Loader2
 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
@@ -39,6 +24,9 @@ import AboutCard from "@/components/profile/AboutCard"
 import SocialPreferences from "./components/profile/SocialPreferences"
 import PersonalitySkillsCard from "@/components/profile/Skill"
 import DiaryPostsCard from "./components/profile/Frinds_Diary"
+
+import ReportProfile from "./components/reportPage"
+import { useAuth } from "@/lib/useAuth"
 
 // User model interface (matching your User model)
 interface UserModel {
@@ -177,6 +165,7 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profileCompleteness, setProfileCompleteness] = useState(0);
+  const { user: authUser } = useAuth()
 
   // Load profile data on mount
   useEffect(() => {
@@ -204,7 +193,7 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
       isMounted = false;
     };
   }, [uid]);
-
+  console.log("Authuser" , authUser)
   // Profile completeness calculation
   useEffect(() => {
     if (user && user.uid) {
@@ -238,15 +227,7 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
     }
   }, [user]);
 
-  const handleConnect = () => {
-    if (isPending) {
-      setIsPending(false)
-    } else if (!isConnected) {
-      setIsPending(true)
-    } else {
-      setIsConnected(false)
-    }
-  }
+ 
 
   const handleMessage = () => {
     console.log("Navigate to messages with this user")
@@ -271,7 +252,8 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
   if (!user || !user.uid) return null;
 
   return (
-    <div className="container mx-auto py-6 px-4 md:px-6">
+   
+     <div className="container mx-auto py-6 px-4 md:px-6">
       {/* Profile Header */}
       <div className="relative mb-8">
         <div className="h-48 w-full rounded-xl bg-gradient-to-r from-purple-600/30 to-blue-500/30 overflow-hidden relative">
@@ -316,28 +298,8 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
               <MessageSquare className="h-4 w-4" />
               Message
             </Button>
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
-              <Share2 className="h-4 w-4" />
-              Share
-            </Button>
-            {!isConnected && !isPending ? (
-              <Button
-                className="bg-gradient-to-r from-purple-600 to-blue-500 text-white flex items-center gap-1"
-                size="sm"
-                onClick={handleConnect}
-              >
-                <UserPlus className="h-4 w-4" />
-                Connect
-              </Button>
-            ) : isPending ? (
-              <Button variant="secondary" size="sm" onClick={handleConnect}>
-                Cancel Request
-              </Button>
-            ) : (
-              <Button variant="outline" size="sm">
-                Connected
-              </Button>
-            )}
+            <ReportProfile  reportedUserId={user.uid} reportedUserName={user.fullName} reporterId={authUser?.uid || ""} reporterName={authUser?.email || ""}/>
+           
           </div>
         </div>
       </div>

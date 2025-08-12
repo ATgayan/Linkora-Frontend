@@ -4,7 +4,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { NavigationBar } from "@/components/navigation-bar";
 import { Toaster } from "@/components/ui/toaster";
 import { ClientAuthProvider } from "@/client-auth-provider";
-import RefreshTokenHandler from "@/components/refresh-token-handler"; 
+import PageTransition from "@/components/animation/PageTransition";
+
 export const metadata: Metadata = {
   title: "Linkora - Connect, Collaborate, Create",
   description: "A social platform for university students to connect based on shared interests and skills",
