@@ -35,6 +35,7 @@ export default function AuthPage() {
   const [degree, setDegree] = useState("")
   const [universityYear, setUniversityYear] = useState("")
   const [hobbies, setHobbies] = useState("")
+  const [gender , setGender] = useState("")
 
   const [activeTab, setActiveTab] = useState("signin")
   const [showPassword, setShowPassword] = useState(false)
@@ -62,7 +63,7 @@ export default function AuthPage() {
         if (!response.ok) { throw new Error("Failed to create session on the backend.") }
         // 2. Initialize chat client
         await initChat(user);
-        router.push(`/profile/${userCredential.user.uid}`) // redirect to profile with uid param
+        router.push(`/profile/${userCredential.user.uid}`)
       } else {
         throw new Error("Login failed to return user information.")
       }
@@ -93,6 +94,7 @@ export default function AuthPage() {
         uid: user.uid,
         fullName: `${firstName} ${lastName}`.trim(),
         email: signupEmail,
+        Gender:gender,
         degreeCard:DegreeCard ||'',
         profilePicture: "/placeholder.svg?height=128&width=128",
         profileCompleteness: 85,
@@ -105,28 +107,19 @@ export default function AuthPage() {
           universityYear,
           positions: "No positions yet"
         },
-        professional: {
-          currentJobs: "Part-time Web Developer at TechStart, Campus Barista",
-          societyPositions: "Treasurer of Debate Society, Volunteer at Local Shelter",
-          workWithPeople: "Creative thinkers, problem solvers, and those who bring diverse perspectives",
-          beAroundPeople: "Energetic, positive, and intellectually curious individuals who enjoy deep conversations"
-        },
+        
         personality: {
           hobbies: ["Photography", "Hiking", "Chess", "Coding", "Reading"],
-          talents: ["Web Development", "Public Speaking", "Creative Writing", "UI/UX Design"]
+          interests: null,
+          type: null,
+          achievements: null
         },
-        socialLinks: {
-          github: "github.com/alexj",
-          linkedin: "linkedin.com/in/alexjohnson",
-          twitter: "twitter.com/alexj",
-          instagram: "instagram.com/alex.johnson",
-          personalWebsite: "https://alexjohnson.dev"
-        },
+      
         activity: {
           posts: 24,
-          collaborations: 5,
+        
         },
-        achievements: "Dean's List 2022-2023, 1st Place Hackathon 2022, Published Research Paper on AI Ethics",
+        
       }
 
 
@@ -140,7 +133,7 @@ export default function AuthPage() {
 
         body: JSON.stringify({ userObject })
       })
-
+      console.log("userObject", userObject)
       if (!backendResponse.ok) {
         const errorData = await backendResponse.json()
         throw new Error(errorData.message || "Failed to save user profile to backend.")
@@ -322,15 +315,48 @@ export default function AuthPage() {
                             />
                           </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="nickname">Nickname</Label>
-                          <Input
-                            id="nickname"
-                            placeholder="alex_j"
-                            value={DegreeCard}
-                            onChange={(e) => setDegreeCard(e.target.value)}
-                          />
-                        </div>
+                        <div className="flex flex-col space-y-4">
+  {/* Nickname field */}
+  <div className="flex flex-col">
+    <Label htmlFor="nickname" className="mb-1">Nickname</Label>
+    <Input
+      id="nickname"
+      placeholder="alex_j"
+      value={DegreeCard}
+      onChange={(e) => setDegreeCard(e.target.value)}
+      className="h-10"  // Set height for consistency
+    />
+  </div>
+
+  {/* Gender radio buttons */}
+  <div className="flex flex-col">
+    <Label className="mb-1">Gender</Label>
+    <div className=" flex gap-4 items-center">
+      <label className=" flex items-center space-x-2">
+        <input
+          type="radio"
+          name="gender"
+          value="Male"
+          onChange={(e) => setGender(e.target.value)}
+          className="h-5 w-5" 
+        />
+        <span>Male</span>
+      </label>
+
+      <label className="flex items-center space-x-2">
+        <input
+          type="radio"
+          name="gender"
+          value="Female"
+          onChange={(e) => setGender(e.target.value)}
+          className="h-5 w-5"
+        />
+        <span>Female</span>
+      </label>
+    </div>
+  </div>
+</div>
+
                         <div className="space-y-2">
                           <Label htmlFor="email">Email</Label>
                           <Input

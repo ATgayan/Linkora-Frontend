@@ -16,37 +16,43 @@ import { X, Plus, Upload, Loader2 } from "lucide-react";
 
 import { User } from "./model/User";
 
-
 interface EditProfileDialogProps {
   isOpen: boolean
   onClose: () => void
   userData: User
-  onSave: (updatedData: any) => void
+  onSave: (updatedData: User) => void
 }
 
 export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditProfileDialogProps) {
   const [formData, setFormData] = useState({
     ...userData,
-    DegreeCard: userData.degreeCard || "",
+    degreeCard: userData.degreeCard || "",
     fullName: userData.fullName || "",
     profilePicture: userData.profilePicture || "",
-    RelationshipState: userData.relationshipState || "",
+    bannerImage: userData.bannerImage || "", 
+    relationshipState: userData.relationshipState || "",
     university: userData.university || {},
-    personality: userData.personality || {},
-    professional: userData.professional || {},
-    socialLinks: userData.socialLinks || {},
-    activity: userData.activity || {},
-    skills: userData.skills || [],
-    thingsYouLikeToDo: userData.personality?.hobbies || userData.thingsYouLikeToDo || [],
-    abilities: userData.personality?.talents || userData.abilities || [],
+    socialPreferences: {
+      workWithPeople: userData?.socialPreferences?.workWithPeople || "",
+      beAroundPeople: userData?.socialPreferences?.beAroundPeople || "",
+    },
+    
+    personality: {
+      whoAmI: userData.personality?.whoAmI || "",
+      type: userData.personality?.type || "",
+      hobbies: userData.personality?.hobbies || [],
+      interests: userData.personality?.interests || "",
+      achievements: userData.personality?.achievements || [], 
+      skills: userData.personality?.skills || [],
+      abilities: userData.personality?.abilities || [],
+    }
   })
   const [newActivity, setNewActivity] = useState("")
-  const [newAbility, setNewAbility] = useState("")
   const [newSkill, setNewSkill] = useState("")
   const [avatarPreview, setAvatarPreview] = useState(userData.profilePicture)
   const [isSaving, setIsSaving] = useState(false)
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: any) => {
     setFormData({
       ...formData,
       [field]: value,
@@ -64,10 +70,13 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
   }
 
   const handleAddActivity = () => {
-    if (newActivity.trim() && !formData.thingsYouLikeToDo?.includes(newActivity.trim())) {
+    if (newActivity.trim() && !(formData.personality.hobbies || []).includes(newActivity.trim())) {
       setFormData({
         ...formData,
-        thingsYouLikeToDo: [...(formData.thingsYouLikeToDo || []), newActivity.trim()],
+        personality: {
+          ...formData.personality,
+          hobbies: [...(formData.personality.hobbies || []), newActivity.trim()],
+        },
       })
       setNewActivity("")
     }
@@ -76,32 +85,21 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
   const handleRemoveActivity = (activity: string) => {
     setFormData({
       ...formData,
-      thingsYouLikeToDo: (formData.thingsYouLikeToDo || []).filter((a: string) => a !== activity),
-    })
-  }
-
-  const handleAddAbility = () => {
-    if (newAbility.trim() && !formData.abilities?.includes(newAbility.trim())) {
-      setFormData({
-        ...formData,
-        abilities: [...(formData.abilities || []), newAbility.trim()],
-      })
-      setNewAbility("")
-    }
-  }
-
-  const handleRemoveAbility = (ability: string) => {
-    setFormData({
-      ...formData,
-      abilities: (formData.abilities || []).filter((a: string) => a !== ability),
+      personality: {
+        ...formData.personality,
+        hobbies: (formData.personality.hobbies || []).filter((a: string) => a !== activity),
+      },
     })
   }
 
   const handleAddSkill = () => {
-    if (newSkill.trim() && !formData.skills?.includes(newSkill.trim())) {
+    if (newSkill.trim() && !formData.personality.skills?.includes(newSkill.trim())) {
       setFormData({
         ...formData,
-        skills: [...(formData.skills || []), newSkill.trim()],
+ personality: {
+ ...formData.personality,
+ skills: [...(formData.personality?.skills || []), newSkill.trim()],
+ },
       })
       setNewSkill("")
     }
@@ -110,86 +108,126 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
   const handleRemoveSkill = (skill: string) => {
     setFormData({
       ...formData,
-      skills: (formData.skills || []).filter((s: string) => s !== skill),
+ personality: {
+ ...formData.personality,
+ skills: (formData.personality.skills || []).filter((s: string) => s !== skill),
+ },
     })
   }
 
-const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
-      setAvatarPreview(base64String); // preview in UI
-      handleInputChange("profilePicture", base64String); // save base64 string in formData
-    };
-    reader.readAsDataURL(file); // converts to base64
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setAvatarPreview(base64String);
+        handleInputChange("profilePicture", base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAchievementChange = (index: number, field: string, value: string) => {
+    const updated = [...(formData.personality.achievements || [])];
+    updated[index] = { ...updated[index], [field]: value };
+    setFormData({
+      ...formData,
+      personality: {
+        ...formData.personality,
+        achievements: updated
+      }
+    });
   }
-};
+
+  const handleRemoveAchievement = (index: number) => {
+    const updated = (formData.personality.achievements || []).filter(
+      (_: any, i: number) => i !== index
+    );
+    setFormData({
+      ...formData,
+      personality: {
+        ...formData.personality,
+        achievements: updated
+      }
+    });
+  }
+
+  const handleAddAchievement = () => {
+    setFormData({
+      ...formData,
+      personality: {
+        ...formData.personality,
+        achievements: [
+          ...(formData.personality.achievements || []),
+          {
+            title: "",
+            description: "",
+            year: new Date().getFullYear().toString(),
+          },
+        ]
+      }
+    });
+  }
 
   const handleSubmit = async () => {
-    setIsSaving(true)
+    setIsSaving(true);
     try {
-
       const userPayload: User = {
-        fullName: formData.fullName,
-        degreeCard: formData.DegreeCard,
-        profilePicture: formData.profilePicture,
-        relationshipState: formData.RelationshipState,
-        location: formData.location || "",
+        uid: userData.uid || "",
+        fullName: formData.fullName || "",
+        degreeCard: formData.degreeCard || null,
+        profilePicture: formData.profilePicture || null,
+        bannerImage: formData.bannerImage || null,
+        email: userData.email || null,
+        profileCompleteness: userData.profileCompleteness || 0,
 
         university: {
-          name: formData.university?.name || "",
-          faculty: formData.university?.faculty || "",
-          degree: formData.university?.degree || "",
-          positions: formData.university?.positions || "",
-          universityYear: formData.university?.universityYear || "",
+          name: formData.university?.name || null,
+          faculty: formData.university?.faculty || null,
+          degree: formData.university?.degree || null,
+          universityYear: formData.university?.universityYear || null,
+          positions: formData.university?.positions || null,
         },
+
+       
+        relationshipState: formData.relationshipState || null,
+        location: formData.location || null,
+        joinDate: userData.joinDate || new Date().toISOString(),
 
         personality: {
-          hobbies: formData.thingsYouLikeToDo || [],
-          talents: formData.abilities || [],
+          type: formData.personality?.type || "",
+          whoAmI: formData.personality.whoAmI || null,
+          hobbies: formData.personality?.hobbies || [],
+          interests: formData.personality?.interests || null,
+          achievements: formData.personality?.achievements || [],
+          skills: formData.personality.skills || [],
         },
 
-        professional: {
-          currentJobs: formData.professional?.currentJobs || "",
-          societyPositions: formData.professional?.societyPositions || "",
-          workWithPeople: formData.professional?.workWithPeople || "",
-          beAroundPeople: formData.professional?.beAroundPeople || "",
-        },
-
-        socialLinks: {
-          github: formData.socialLinks?.github || "",
-          linkedin: formData.socialLinks?.linkedin || "",
-          twitter: formData.socialLinks?.twitter || "",
-          instagram: formData.socialLinks?.instagram || "",
-          facebook: formData.socialLinks?.facebook || "",
-          personalWebsite: formData.socialLinks?.personalWebsite || "",
+        socialPreferences: {
+          workWithPeople: formData?.socialPreferences?.workWithPeople || "",
+          beAroundPeople: formData?.socialPreferences?.beAroundPeople || "",
         },
 
         activity: {
           posts: formData.activity?.posts || 0,
-          collaborations: formData.activity?.collaborations || 0,
+         
         },
-
-        whoAmI: formData.whoAmI || "",
-        interests: formData.interests || "",
-        achievements: formData.achievements || "",
-        abilities: formData.abilities || [],
-        skills: formData.skills || [],
-        uid: "",
-        profileCompleteness: 0,
-        
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/update-profile/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(userPayload),
-      });
+      
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/update-profile/`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(userPayload),
+        }
+      );
 
       const data = await response.json();
 
@@ -197,13 +235,13 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         throw new Error(data.message || "Failed to update profile");
       }
 
-      onSave(formData);
+      onSave(userPayload);
       onClose();
     } catch (err: any) {
       console.error("Profile update failed:", err.message);
       alert("Something went wrong while saving. Please try again.");
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
   };
 
@@ -225,6 +263,41 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Basic Info Tab */}
           <TabsContent value="basic" className="space-y-4">
+            {/* Banner Image Upload */}
+            <div className="flex flex-col items-center mb-6">
+              <div className="relative w-full max-w-xl">
+                <img
+                  src={formData.bannerImage || "/Banner_image/image.png"}
+                  alt="Banner"
+                  className="w-full h-32 object-cover rounded-lg border"
+                />
+                <div className="absolute bottom-2 right-2 rounded-full bg-primary p-1 cursor-pointer">
+                  <label htmlFor="banner-upload" className="cursor-pointer flex items-center gap-1">
+                    <Upload className="h-4 w-4 text-white" />
+                    <input
+                      id="banner-upload"
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            const base64String = reader.result as string;
+                            handleInputChange("bannerImage", base64String);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground mt-2">Banner Image</span>
+            </div>
+
+            {/* Profile Photo Upload */}
             <div className="flex flex-col items-center mb-6">
               <div className="relative">
                 <Avatar className="h-24 w-24 border-4 border-background">
@@ -244,15 +317,16 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   </label>
                 </div>
               </div>
+              <span className="text-xs text-muted-foreground mt-2">Profile Photo</span>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="DegreeCard">Degree Card</Label>
+                <Label htmlFor="degreeCard">Card Name</Label>
                 <Input
-                  id="DegreeCard"
-                  value={formData.DegreeCard || ""}
-                  onChange={(e) => handleInputChange("DegreeCard",e.target.value)}
+                  id="degreeCard"
+                  value={formData.degreeCard || ""}
+                  onChange={(e) => handleInputChange("degreeCard", e.target.value)}
                   placeholder="Degree card"
                 />
               </div>
@@ -281,7 +355,6 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   </SelectContent>
                 </Select>
               </div>
-             
             </div>
           </TabsContent>
 
@@ -326,11 +399,10 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="universityYear">University Year</Label>
-                  <Select
-  value={formData.university?.universityYear || ""}
-  onValueChange={(value) => handleNestedInputChange("university", "universityYear", value)}
->
-
+                <Select
+                  value={formData.university?.universityYear || ""}
+                  onValueChange={(value) => handleNestedInputChange("university", "universityYear", value)}
+                >
                   <SelectTrigger id="universityYear">
                     <SelectValue placeholder="Select your year" />
                   </SelectTrigger>
@@ -353,28 +425,36 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 <Label htmlFor="whoAmI">Who Am I?</Label>
                 <Textarea
                   id="whoAmI"
-                  value={formData.whoAmI || ""}
-                  onChange={(e) => handleInputChange("whoAmI", e.target.value)}
+                  value={formData.personality.whoAmI || ""}
+                  onChange={(e) => handleNestedInputChange("personality", "whoAmI", e.target.value)}
                   placeholder="Tell others about yourself..."
                   className="min-h-[100px]"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="interests">Interests</Label>
-                <Textarea
-                  id="interests"
-                  value={formData.interests || ""}
-                  onChange={(e) => handleInputChange("interests", e.target.value)}
-                  placeholder="What are you interested in?"
-                  className="min-h-[80px]"
-                />
+                <Label htmlFor="personalityType">Personality Type</Label>
+                <Select
+                  value={formData.personality?.type || ""}
+                  onValueChange={(value) =>
+                    handleNestedInputChange("personality", "type", value)
+                  }
+                >
+                  <SelectTrigger id="personalityType">
+                    <SelectValue placeholder="Select your personality type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Introvert">Introvert</SelectItem>
+                    <SelectItem value="Extrovert">Extrovert</SelectItem>
+                    <SelectItem value="Ambivert">Ambivert</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <Label>Hobbies (Things You Like to Do)</Label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {(formData.thingsYouLikeToDo || []).map((activity: string, index: number) => (
+                  {(formData.personality.hobbies || []).map((activity: string, index: number) => (
                     <Badge key={index} variant="secondary" className="rounded-full flex items-center gap-1">
                       {activity}
                       <button onClick={() => handleRemoveActivity(activity)} className="ml-1">
@@ -402,43 +482,9 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               </div>
 
               <div className="space-y-2">
-                <Label>Talents</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {(formData.abilities || []).map((ability: string, index: number) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="rounded-full flex items-center gap-1 bg-gradient-to-r from-purple-500/10 to-blue-500/10 text-purple-500 border-purple-200 dark:border-purple-800"
-                    >
-                      {ability}
-                      <button onClick={() => handleRemoveAbility(ability)} className="ml-1">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a talent"
-                    value={newAbility}
-                    onChange={(e) => setNewAbility(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        handleAddAbility()
-                      }
-                    }}
-                  />
-                  <Button variant="outline" size="icon" onClick={handleAddAbility} disabled={!newAbility.trim()}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
                 <Label>Skills</Label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {(formData.skills || []).map((skill: string, index: number) => (
+                  {(formData.personality.skills || []).map((skill: string, index: number) => (
                     <Badge
                       key={index}
                       variant="default"
@@ -469,16 +515,64 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Label htmlFor="achievements">Achievements</Label>
-                <Textarea
-                  id="achievements"
-                  value={formData.achievements || ""}
-                  onChange={(e) => handleInputChange("achievements", e.target.value)}
-                  placeholder="List your achievements..."
-                  className="min-h-[100px]"
-                />
+                {(formData.personality.achievements || []).map((achievement: any, index: number) => (
+                  <div key={achievement.id || index} className="flex gap-2 items-center">
+                    {/* Title Input */}
+                    <Input
+                      type="text"
+                      value={achievement.title || ""}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        handleAchievementChange(index, "title", e.target.value);
+                      }}
+                      placeholder={`Title ${index + 1}`}
+                      className="flex-1"
+                    />
+
+                    {/* Description Input */}
+                    <Input
+                      type="text"
+                      value={achievement.description || ""}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        handleAchievementChange(index, "description", e.target.value);
+                      }}
+                      placeholder={`Description ${index + 1}`}
+                      className="flex-1"
+                    />
+
+                    {/* Year Input */}
+                    <Input
+                      type="text"
+                      value={achievement.year || ""}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        handleAchievementChange(index, "year", e.target.value);
+                      }}
+                      placeholder={`Year ${index + 1}`}
+                      className="w-24"
+                    />
+
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => handleRemoveAchievement(index)}
+                      size="sm"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+
+                <Button
+                  className="mt-4"
+                  type="button"
+                  variant="secondary"
+                  onClick={handleAddAchievement}
+                >
+                  + Add Achievement
+                </Button>
               </div>
+
             </div>
           </TabsContent>
 
@@ -486,75 +580,24 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           <TabsContent value="professional" className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="currentJobs">Current Jobs</Label>
-                <Input
-                  id="currentJobs"
-                  value={formData.professional?.currentJobs || ""}
-                  onChange={(e) => handleNestedInputChange("professional", "currentJobs", e.target.value)}
-                  placeholder="E.g., Software Engineer at Tech Corp"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="societyPositions">Society Positions</Label>
-                <Input
-                  id="societyPositions"
-                  value={formData.professional?.societyPositions || ""}
-                  onChange={(e) => handleNestedInputChange("professional", "societyPositions", e.target.value)}
-                  placeholder="E.g., President of Computer Science Society"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="workWithPeople">Work With People</Label>
+                <Label htmlFor="workWithPeople">What Kind of People Do You Like to Work With?</Label>
                 <Textarea
                   id="workWithPeople"
-                  value={formData.professional?.workWithPeople || ""}
-                  onChange={(e) => handleNestedInputChange("professional", "workWithPeople", e.target.value)}
+                  value={formData.socialPreferences?.workWithPeople || ""}
+                  onChange={(e) => handleNestedInputChange("socialPreferences", "workWithPeople", e.target.value)}
                   placeholder="Describe your experience working with people..."
                   className="min-h-[80px]"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="beAroundPeople">Be Around People</Label>
+                <Label htmlFor="beAroundPeople">What Kind of People Do You Like to Be Around?</Label>
                 <Textarea
                   id="beAroundPeople"
-                  value={formData.professional?.beAroundPeople || ""}
-                  onChange={(e) => handleNestedInputChange("professional", "beAroundPeople", e.target.value)}
+                  value={formData.socialPreferences?.beAroundPeople || ""}
+                  onChange={(e) => handleNestedInputChange("socialPreferences", "beAroundPeople", e.target.value)}
                   placeholder="How do you feel about being around people?"
                   className="min-h-[80px]"
                 />
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Social Links</h3>
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="github">GitHub</Label>
-                    <Input
-                      id="github"
-                      value={formData.socialLinks?.github || ""}
-                      onChange={(e) => handleNestedInputChange("socialLinks", "github", e.target.value)}
-                      placeholder="https://github.com/username"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="linkedin">LinkedIn</Label>
-                    <Input
-                      id="linkedin"
-                      value={formData.socialLinks?.linkedin || ""}
-                      onChange={(e) => handleNestedInputChange("socialLinks", "linkedin", e.target.value)}
-                      placeholder="https://linkedin.com/in/username"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="personalWebsite">Personal Website</Label>
-                    <Input
-                      id="personalWebsite"
-                      value={formData.socialLinks?.personalWebsite || ""}
-                      onChange={(e) => handleNestedInputChange("socialLinks", "personalWebsite", e.target.value)}
-                      placeholder="https://yourwebsite.com"
-                    />
-                  </div>
-                </div>
               </div>
             </div>
           </TabsContent>

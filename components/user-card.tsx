@@ -46,61 +46,45 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto rounded-2xl border bg-card p-6 shadow-lg transition hover:shadow-xl dark:border-border">
-      <div className="flex items-center gap-4">
-        <Image
-          src={photoURL || '/default-avatar.png'}
-          alt={name}
-          width={72}
-          height={72}
-          className=" h-20 w-20 rounded-full border object-cover"
-        />
-
-        <div>
-          <h2 className="text-xl font-semibold text-foreground">{name}</h2>
-
+    <div className="w-100 h-64 mx-auto rounded-2xl border bg-card p-6 shadow-lg transition hover:shadow-xl dark:border-border overflow-hidden">
+      <div className="flex items-center gap-4 mb-4">
+        <div className="w-16 h-16 rounded-full border overflow-hidden flex-shrink-0">
+          <Image
+            src={photoURL || '/profile_Pic/nopic.jpg'}
+            alt={name}
+            width={64}
+            height={64}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg font-semibold text-foreground truncate">{name}</h2>
+          
           {university && (
-            <div className="text-sm text-muted-foreground mt-1 leading-tight">
-              {university.name && <p>{university.name}</p>}
-              {university.faculty && <p>Faculty of {university.faculty}</p>}
-              {university.degree && <p>{university.degree}</p>}
+            <div className="text-xs text-muted-foreground mt-1 leading-tight">
+              {university.name && <p className="truncate">{university.name}</p>}
+              {university.faculty && <p className="truncate">Faculty of {university.faculty}</p>}
+              {university.degree && <p className="truncate">{university.degree}</p>}
             </div>
           )}
-
+          
           {location && (
-            <div className="text-sm text-muted-foreground mt-1">{location}</div>
+            <div className="text-xs text-muted-foreground mt-1 truncate">{location}</div>
           )}
-
+          
           {relationshipStatus && (
-            <div className="text-sm italic text-muted-foreground mt-1">
+            <div className="text-xs italic text-muted-foreground mt-1 truncate">
               {relationshipStatus}
             </div>
           )}
         </div>
       </div>
-
-      {bio && (
-        <p className="text-sm text-muted-foreground mt-4 line-clamp-3">{bio}</p>
-      )}
-
-      {skills.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-4">
-          {skills.map((skill, idx) => (
-            <Badge
-              key={idx}
-              variant="secondary"
-              className="rounded-full text-sm px-3 py-1"
-            >
-              {skill}
-            </Badge>
-          ))}
-        </div>
-      )}
-
-      <div className="mt-6 flex gap-3">
+      
+      <div className="flex gap-3 mt-20">
         <Button
           size="sm"
-          className="flex-1 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90"
+          className="flex-1 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:opacity-90 text-sm"
           onClick={handleConnect}
         >
           Message
@@ -108,7 +92,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onConnect }) => {
         <Button
           size="sm"
           variant="outline"
-          className="flex-1 rounded-full border-primary text-primary hover:bg-primary/10"
+          className="flex-1 rounded-full border-primary text-primary hover:bg-primary/10 text-sm"
           onClick={() => router.push(`/profile/${uid}`)}
         >
           View Profile

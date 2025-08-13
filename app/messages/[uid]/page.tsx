@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { MessageCircle, Search, Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useParams } from 'next/navigation';
 
 import 'stream-chat-react/dist/css/v2/index.css';
 
@@ -33,6 +34,10 @@ export default function ChatPage() {
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+
+  const params = useParams();
+  const uidFromQuery = params.uid;
+  
 
   useEffect(() => {
     setMounted(true);
@@ -109,6 +114,9 @@ export default function ChatPage() {
     };
   }, [chatClient, allUsers, mounted]);
 
+
+
+
   const openChat = async (u: any) => {
     if (!chatClient) {
       setConnectionError('Chat client not available');
@@ -143,6 +151,24 @@ export default function ChatPage() {
       setIsConnecting(false);
     }
   };
+
+
+useEffect(() => {
+  if (
+    mounted &&
+    chatClient &&
+    chatClient.userID &&
+    allUsers.length > 0 &&
+    uidFromQuery
+  ) {
+    const targetUser = allUsers.find(
+      (u) => u.streamUserId === uidFromQuery
+    );
+    if (targetUser) {
+      openChat(targetUser);
+    }
+  }
+}, [mounted, chatClient, allUsers, uidFromQuery]);
 
   if (!mounted) {
     return (
