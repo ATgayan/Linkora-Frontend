@@ -203,11 +203,6 @@ export default function SearchPage() {
               </Badge>
             ))}
           </div>
-          {allTags.length > 0 && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Showing hobbies from {users.length} users
-            </p>
-          )}
         </div>
 
         {/* Results Count */}
@@ -218,10 +213,6 @@ export default function SearchPage() {
         </div>
 
         <Tabs defaultValue="people">
-          <TabsList className="mb-4">
-            <TabsTrigger value="people">People</TabsTrigger>
-          </TabsList>
-
           <TabsContent value="people">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredUsers.length > 0 ? (
@@ -248,12 +239,7 @@ export default function SearchPage() {
                       onConnect={handleConnect}
                     />
 
-                    {user.personality?.achievements && (
-                      <p className="text-xs mt-3 italic text-primary/80">
-                        🏆 {user.personality.achievements.map(a => a.title).join(', ')}
-                      </p>
-                    )}
-
+                    
                     {Array.isArray(user.personality?.hobbies) &&
                       user.personality.hobbies.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-3">

@@ -22,17 +22,45 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUid(user.uid);
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        // Wait for auth state to be determined
+        await new Promise<void>((resolve) => {
+          const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (isMounted) {
+              if (user) {
+                setCurrentUid(user.uid);
+              }
+              resolve();
+            }
+          });
+        });
+
+        // Optionally: fetch extra profile data here
+        // Example:
+        // const profileData = await getDoc(doc(db, 'users', profileUid));
+        // console.log('Profile data:', profileData.data());
+
+      } catch (err) {
+        console.error('Error loading profile:', err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
-      setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
-  }, []);
+    fetchData();
+    return () => {
+      isMounted = false;
+    };
+  }, [profileUid]);
 
-  
+  if (loading) {
+    return (
+      null
+    );
+  }
 
   const isOwnProfile = currentUid === profileUid;
 
