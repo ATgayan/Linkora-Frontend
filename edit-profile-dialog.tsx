@@ -215,7 +215,7 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
         },
       };
 
-      console.log("Submitting user data:", userPayload);
+      
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/update-profile/`,
@@ -322,7 +322,7 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
 
             <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="degreeCard">Degree Card</Label>
+                <Label htmlFor="degreeCard">Card Name</Label>
                 <Input
                   id="degreeCard"
                   value={formData.degreeCard || ""}

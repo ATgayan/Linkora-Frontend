@@ -193,7 +193,7 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
       isMounted = false;
     };
   }, [uid]);
-  console.log("Authuser" , authUser)
+ 
   // Profile completeness calculation
   useEffect(() => {
     if (user && user.uid) {
