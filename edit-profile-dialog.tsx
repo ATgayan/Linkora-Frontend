@@ -247,361 +247,371 @@ export function EditProfileDialog({ isOpen, onClose, userData, onSave }: EditPro
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-2xl">Edit Profile</DialogTitle>
           <DialogDescription>Update your profile information to help others get to know you better.</DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="basic" className="mt-4">
-          <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="university">University</TabsTrigger>
-            <TabsTrigger value="personal">Personal</TabsTrigger>
-            <TabsTrigger value="professional">Professional</TabsTrigger>
-          </TabsList>
+        <div className="mt-4 overflow-y-auto scrollbar-hide" style={{
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}>
+          <style jsx>{`
+            .scrollbar-hide::-webkit-scrollbar {
+              display: none;
+            }
+          `}</style>
+          
+          <Tabs defaultValue="basic">
+            <TabsList className="grid grid-cols-4 mb-4">
+              <TabsTrigger value="basic">Basic Info</TabsTrigger>
+              <TabsTrigger value="university">University</TabsTrigger>
+              <TabsTrigger value="personal">Personal</TabsTrigger>
+              <TabsTrigger value="professional">Professional</TabsTrigger>
+            </TabsList>
 
-          {/* Basic Info Tab */}
-          <TabsContent value="basic" className="space-y-4">
-            {/* Banner Image Upload */}
-            <div className="flex flex-col items-center mb-6">
-              <div className="relative w-full max-w-xl">
-                <img
-                  src={formData.bannerImage || "/Banner_image/image.png"}
-                  alt="Banner"
-                  className="w-full h-32 object-cover rounded-lg border"
-                />
-                <div className="absolute bottom-2 right-2 rounded-full bg-primary p-1 cursor-pointer">
-                  <label htmlFor="banner-upload" className="cursor-pointer flex items-center gap-1">
-                    <Upload className="h-4 w-4 text-white" />
-                    <input
-                      id="banner-upload"
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            const base64String = reader.result as string;
-                            handleInputChange("bannerImage", base64String);
-                          };
-                          reader.readAsDataURL(file);
+            {/* Basic Info Tab */}
+            <TabsContent value="basic" className="space-y-4">
+              {/* Banner Image Upload */}
+              <div className="flex flex-col items-center mb-6">
+                <div className="relative w-full max-w-xl">
+                  <img
+                    src={formData.bannerImage || "/Banner_image/image.png"}
+                    alt="Banner"
+                    className="w-full h-32 object-cover rounded-lg border"
+                  />
+                  <div className="absolute bottom-2 right-2 rounded-full bg-primary p-1 cursor-pointer">
+                    <label htmlFor="banner-upload" className="cursor-pointer flex items-center gap-1">
+                      <Upload className="h-4 w-4 text-white" />
+                      <input
+                        id="banner-upload"
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              const base64String = reader.result as string;
+                              handleInputChange("bannerImage", base64String);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+                <span className="text-xs text-muted-foreground mt-2">Banner Image</span>
+              </div>
+
+              {/* Profile Photo Upload */}
+              <div className="flex flex-col items-center mb-6">
+                <div className="relative">
+                  <Avatar className="h-24 w-24 border-4 border-background">
+                    <AvatarImage src={avatarPreview || "/placeholder.svg"} alt={formData.fullName} />
+                    <AvatarFallback>{formData.fullName?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="absolute bottom-0 right-0 rounded-full bg-primary p-1 cursor-pointer">
+                    <label htmlFor="avatar-upload" className="cursor-pointer">
+                      <Upload className="h-4 w-4 text-white" />
+                      <input
+                        id="avatar-upload"
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                      />
+                    </label>
+                  </div>
+                </div>
+                <span className="text-xs text-muted-foreground mt-2">Profile Photo</span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="degreeCard">Card Name</Label>
+                  <Input
+                    id="degreeCard"
+                    value={formData.degreeCard || ""}
+                    onChange={(e) => handleInputChange("degreeCard", e.target.value)}
+                    placeholder="Degree card"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    value={formData.fullName || ""}
+                    onChange={(e) => handleInputChange("fullName", e.target.value)}
+                    placeholder="Enter name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="relationshipState">Relationship State</Label>
+                  <Select
+                    value={formData.relationshipState || ""}
+                    onValueChange={(value) => handleInputChange("relationshipState", value)}
+                  >
+                    <SelectTrigger id="relationshipState">
+                      <SelectValue placeholder="Select relationship state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Single">Single</SelectItem>
+                      <SelectItem value="I have relationship">I have relationship</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* University Tab */}
+            <TabsContent value="university" className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="universityName">University Name</Label>
+                  <Input
+                    id="universityName"
+                    value={formData.university?.name || ""}
+                    onChange={(e) => handleNestedInputChange("university", "name", e.target.value)}
+                    placeholder="E.g., Stanford University"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="facultyName">Faculty Name</Label>
+                  <Input
+                    id="facultyName"
+                    value={formData.university?.faculty || ""}
+                    onChange={(e) => handleNestedInputChange("university", "faculty", e.target.value)}
+                    placeholder="E.g., Computer Science"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="degreeName">Degree Name</Label>
+                  <Input
+                    id="degreeName"
+                    value={formData.university?.degree || ""}
+                    onChange={(e) => handleNestedInputChange("university", "degree", e.target.value)}
+                    placeholder="E.g., Bachelor of Science"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="positions">University Positions</Label>
+                  <Input
+                    id="positions"
+                    value={formData.university?.positions || ""}
+                    onChange={(e) => handleNestedInputChange("university", "positions", e.target.value)}
+                    placeholder="E.g., Student Council President"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="universityYear">University Year</Label>
+                  <Select
+                    value={formData.university?.universityYear || ""}
+                    onValueChange={(value) => handleNestedInputChange("university", "universityYear", value)}
+                  >
+                    <SelectTrigger id="universityYear">
+                      <SelectValue placeholder="Select your year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1st Year">1st Year</SelectItem>
+                      <SelectItem value="2nd Year">2nd Year</SelectItem>
+                      <SelectItem value="3rd Year">3rd Year</SelectItem>
+                      <SelectItem value="4th Year">4th Year</SelectItem>
+                      <SelectItem value="Graduate Student">Graduate Student</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Personal Tab */}
+            <TabsContent value="personal" className="space-y-4">
+              <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="whoAmI">Who Am I?</Label>
+                  <Textarea
+                    id="whoAmI"
+                    value={formData.personality.whoAmI || ""}
+                    onChange={(e) => handleNestedInputChange("personality", "whoAmI", e.target.value)}
+                    placeholder="Tell others about yourself..."
+                    className="min-h-[100px]"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="personalityType">Personality Type</Label>
+                  <Select
+                    value={formData.personality?.type || ""}
+                    onValueChange={(value) =>
+                      handleNestedInputChange("personality", "type", value)
+                    }
+                  >
+                    <SelectTrigger id="personalityType">
+                      <SelectValue placeholder="Select your personality type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Introvert">Introvert</SelectItem>
+                      <SelectItem value="Extrovert">Extrovert</SelectItem>
+                      <SelectItem value="Ambivert">Ambivert</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Hobbies (Things You Like to Do)</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {(formData.personality.hobbies || []).map((activity: string, index: number) => (
+                      <Badge key={index} variant="secondary" className="rounded-full flex items-center gap-1">
+                        {activity}
+                        <button onClick={() => handleRemoveActivity(activity)} className="ml-1">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Add a hobby"
+                      value={newActivity}
+                      onChange={(e) => setNewActivity(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault()
+                          handleAddActivity()
                         }
                       }}
                     />
-                  </label>
-                </div>
-              </div>
-              <span className="text-xs text-muted-foreground mt-2">Banner Image</span>
-            </div>
-
-            {/* Profile Photo Upload */}
-            <div className="flex flex-col items-center mb-6">
-              <div className="relative">
-                <Avatar className="h-24 w-24 border-4 border-background">
-                  <AvatarImage src={avatarPreview || "/placeholder.svg"} alt={formData.fullName} />
-                  <AvatarFallback>{formData.fullName?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="absolute bottom-0 right-0 rounded-full bg-primary p-1 cursor-pointer">
-                  <label htmlFor="avatar-upload" className="cursor-pointer">
-                    <Upload className="h-4 w-4 text-white" />
-                    <input
-                      id="avatar-upload"
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleAvatarChange}
-                    />
-                  </label>
-                </div>
-              </div>
-              <span className="text-xs text-muted-foreground mt-2">Profile Photo</span>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="degreeCard">Card Name</Label>
-                <Input
-                  id="degreeCard"
-                  value={formData.degreeCard || ""}
-                  onChange={(e) => handleInputChange("degreeCard", e.target.value)}
-                  placeholder="Degree card"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input
-                  id="fullName"
-                  value={formData.fullName || ""}
-                  onChange={(e) => handleInputChange("fullName", e.target.value)}
-                  placeholder="Enter name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="relationshipState">Relationship State</Label>
-                <Select
-                  value={formData.relationshipState || ""}
-                  onValueChange={(value) => handleInputChange("relationshipState", value)}
-                >
-                  <SelectTrigger id="relationshipState">
-                    <SelectValue placeholder="Select relationship state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Looking for a relationship">Looking for a relationship</SelectItem>
-                    <SelectItem value="I doesn't want relationship">I doesn't want relationship</SelectItem>
-                    <SelectItem value="I have relationship">I have relationship</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* University Tab */}
-          <TabsContent value="university" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="universityName">University Name</Label>
-                <Input
-                  id="universityName"
-                  value={formData.university?.name || ""}
-                  onChange={(e) => handleNestedInputChange("university", "name", e.target.value)}
-                  placeholder="E.g., Stanford University"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="facultyName">Faculty Name</Label>
-                <Input
-                  id="facultyName"
-                  value={formData.university?.faculty || ""}
-                  onChange={(e) => handleNestedInputChange("university", "faculty", e.target.value)}
-                  placeholder="E.g., Computer Science"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="degreeName">Degree Name</Label>
-                <Input
-                  id="degreeName"
-                  value={formData.university?.degree || ""}
-                  onChange={(e) => handleNestedInputChange("university", "degree", e.target.value)}
-                  placeholder="E.g., Bachelor of Science"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="positions">University Positions</Label>
-                <Input
-                  id="positions"
-                  value={formData.university?.positions || ""}
-                  onChange={(e) => handleNestedInputChange("university", "positions", e.target.value)}
-                  placeholder="E.g., Student Council President"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="universityYear">University Year</Label>
-                <Select
-                  value={formData.university?.universityYear || ""}
-                  onValueChange={(value) => handleNestedInputChange("university", "universityYear", value)}
-                >
-                  <SelectTrigger id="universityYear">
-                    <SelectValue placeholder="Select your year" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1st Year">1st Year</SelectItem>
-                    <SelectItem value="2nd Year">2nd Year</SelectItem>
-                    <SelectItem value="3rd Year">3rd Year</SelectItem>
-                    <SelectItem value="4th Year">4th Year</SelectItem>
-                    <SelectItem value="Graduate Student">Graduate Student</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Personal Tab */}
-          <TabsContent value="personal" className="space-y-4">
-            <div className="grid grid-cols-1 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="whoAmI">Who Am I?</Label>
-                <Textarea
-                  id="whoAmI"
-                  value={formData.personality.whoAmI || ""}
-                  onChange={(e) => handleNestedInputChange("personality", "whoAmI", e.target.value)}
-                  placeholder="Tell others about yourself..."
-                  className="min-h-[100px]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="personalityType">Personality Type</Label>
-                <Select
-                  value={formData.personality?.type || ""}
-                  onValueChange={(value) =>
-                    handleNestedInputChange("personality", "type", value)
-                  }
-                >
-                  <SelectTrigger id="personalityType">
-                    <SelectValue placeholder="Select your personality type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Introvert">Introvert</SelectItem>
-                    <SelectItem value="Extrovert">Extrovert</SelectItem>
-                    <SelectItem value="Ambivert">Ambivert</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Hobbies (Things You Like to Do)</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {(formData.personality.hobbies || []).map((activity: string, index: number) => (
-                    <Badge key={index} variant="secondary" className="rounded-full flex items-center gap-1">
-                      {activity}
-                      <button onClick={() => handleRemoveActivity(activity)} className="ml-1">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a hobby"
-                    value={newActivity}
-                    onChange={(e) => setNewActivity(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        handleAddActivity()
-                      }
-                    }}
-                  />
-                  <Button variant="outline" size="icon" onClick={handleAddActivity} disabled={!newActivity.trim()}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Skills</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {(formData.personality.skills || []).map((skill: string, index: number) => (
-                    <Badge
-                      key={index}
-                      variant="default"
-                      className="rounded-full flex items-center gap-1 bg-gradient-to-r from-green-500/10 to-emerald-500/10 text-green-600 border-green-200 dark:border-green-800"
-                    >
-                      {skill}
-                      <button onClick={() => handleRemoveSkill(skill)} className="ml-1">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a skill"
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        handleAddSkill()
-                      }
-                    }}
-                  />
-                  <Button variant="outline" size="icon" onClick={handleAddSkill} disabled={!newSkill.trim()}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <Label htmlFor="achievements">Achievements</Label>
-                {(formData.personality.achievements || []).map((achievement: any, index: number) => (
-                  <div key={achievement.id || index} className="flex gap-2 items-center">
-                    {/* Title Input */}
-                    <Input
-                      type="text"
-                      value={achievement.title || ""}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        handleAchievementChange(index, "title", e.target.value);
-                      }}
-                      placeholder={`Title ${index + 1}`}
-                      className="flex-1"
-                    />
-
-                    {/* Description Input */}
-                    <Input
-                      type="text"
-                      value={achievement.description || ""}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        handleAchievementChange(index, "description", e.target.value);
-                      }}
-                      placeholder={`Description ${index + 1}`}
-                      className="flex-1"
-                    />
-
-                    {/* Year Input */}
-                    <Input
-                      type="text"
-                      value={achievement.year || ""}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        handleAchievementChange(index, "year", e.target.value);
-                      }}
-                      placeholder={`Year ${index + 1}`}
-                      className="w-24"
-                    />
-
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={() => handleRemoveAchievement(index)}
-                      size="sm"
-                    >
-                      Remove
+                    <Button variant="outline" size="icon" onClick={handleAddActivity} disabled={!newActivity.trim()}>
+                      <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                ))}
+                </div>
 
-                <Button
-                  className="mt-4"
-                  type="button"
-                  variant="secondary"
-                  onClick={handleAddAchievement}
-                >
-                  + Add Achievement
-                </Button>
-              </div>
+                <div className="space-y-2">
+                  <Label>Skills</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {(formData.personality.skills || []).map((skill: string, index: number) => (
+                      <Badge
+                        key={index}
+                        variant="default"
+                        className="rounded-full flex items-center gap-1 bg-gradient-to-r from-green-500/10 to-emerald-500/10 text-green-600 border-green-200 dark:border-green-800"
+                      >
+                        {skill}
+                        <button onClick={() => handleRemoveSkill(skill)} className="ml-1">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Add a skill"
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault()
+                          handleAddSkill()
+                        }
+                      }}
+                    />
+                    <Button variant="outline" size="icon" onClick={handleAddSkill} disabled={!newSkill.trim()}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
 
-            </div>
-          </TabsContent>
+                <div className="space-y-4">
+                  <Label htmlFor="achievements">Achievements</Label>
+                  {(formData.personality.achievements || []).map((achievement: any, index: number) => (
+                    <div key={achievement.id || index} className="flex gap-2 items-center">
+                      {/* Title Input */}
+                      <Input
+                        type="text"
+                        value={achievement.title || ""}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          handleAchievementChange(index, "title", e.target.value);
+                        }}
+                        placeholder={`Title ${index + 1}`}
+                        className="flex-1"
+                      />
 
-          {/* Professional Tab */}
-          <TabsContent value="professional" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="workWithPeople">What Kind of People Do You Like to Work With?</Label>
-                <Textarea
-                  id="workWithPeople"
-                  value={formData.socialPreferences?.workWithPeople || ""}
-                  onChange={(e) => handleNestedInputChange("socialPreferences", "workWithPeople", e.target.value)}
-                  placeholder="Describe your experience working with people..."
-                  className="min-h-[80px]"
-                />
+                      {/* Description Input */}
+                      <Input
+                        type="text"
+                        value={achievement.description || ""}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          handleAchievementChange(index, "description", e.target.value);
+                        }}
+                        placeholder={`Description ${index + 1}`}
+                        className="flex-1"
+                      />
+
+                      {/* Year Input */}
+                      <Input
+                        type="text"
+                        value={achievement.year || ""}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          handleAchievementChange(index, "year", e.target.value);
+                        }}
+                        placeholder={`Year ${index + 1}`}
+                        className="w-24"
+                      />
+
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() => handleRemoveAchievement(index)}
+                        size="sm"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+
+                  <Button
+                    className="mt-4"
+                    type="button"
+                    variant="secondary"
+                    onClick={handleAddAchievement}
+                  >
+                    + Add Achievement
+                  </Button>
+                </div>
+
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="beAroundPeople">What Kind of People Do You Like to Be Around?</Label>
-                <Textarea
-                  id="beAroundPeople"
-                  value={formData.socialPreferences?.beAroundPeople || ""}
-                  onChange={(e) => handleNestedInputChange("socialPreferences", "beAroundPeople", e.target.value)}
-                  placeholder="How do you feel about being around people?"
-                  className="min-h-[80px]"
-                />
+            </TabsContent>
+
+            {/* Professional Tab */}
+            <TabsContent value="professional" className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="workWithPeople">What Kind of People Do You Like to Work With?</Label>
+                  <Textarea
+                    id="workWithPeople"
+                    value={formData.socialPreferences?.workWithPeople || ""}
+                    onChange={(e) => handleNestedInputChange("socialPreferences", "workWithPeople", e.target.value)}
+                    placeholder="Describe your experience working with people..."
+                    className="min-h-[80px]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="beAroundPeople">What Kind of People Do You Like to Be Around?</Label>
+                  <Textarea
+                    id="beAroundPeople"
+                    value={formData.socialPreferences?.beAroundPeople || ""}
+                    onChange={(e) => handleNestedInputChange("socialPreferences", "beAroundPeople", e.target.value)}
+                    placeholder="How do you feel about being around people?"
+                    className="min-h-[80px]"
+                  />
+                </div>
               </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+          </Tabs>
+        </div>
 
         <div className="flex justify-end gap-2 mt-6">
           <Button variant="outline" onClick={onClose}>

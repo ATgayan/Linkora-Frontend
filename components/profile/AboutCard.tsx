@@ -4,7 +4,7 @@ import {
   CardTitle,
   CardContent,
 } from '@/components/ui/card'
-import { User, Heart, GraduationCap } from 'lucide-react'
+import { User, Heart, UserPlus } from 'lucide-react'
 
 type UserType = {
   
@@ -33,19 +33,22 @@ export default function AboutCard({ users }: Props) {
   console.log('User data about card:', users)
 
   const relationshipIcons = {
-    single: <Heart className="h-5 w-5 text-pink-500" />,
-    'I have relationship': <Heart className="h-5 w-5 text-red-600" />,
-    married: <Heart className="h-5 w-5 text-purple-600" />,
-    complicated: <Heart className="h-5 w-5 text-yellow-500" />,
-  }
+  single: <Heart className="h-5 w-5 text-pink-500" />,
+  "i have relationship": <Heart className="h-5 w-5 text-red-600" />,
+  married: <Heart className="h-5 w-5 text-purple-600" />,
+  complicated: <Heart className="h-5 w-5 text-yellow-500" />,
+  "no relationship": <UserPlus className="h-5 w-5 text-blue-500" />, // Added recommend icon
+};
 
-  const relationshipIcon =
-    (users?.relationshipState &&
-      relationshipIcons[
+const relationshipIcon =
+  users?.relationshipState &&
+  relationshipIcons[
+    users.relationshipState.toLowerCase() as keyof typeof relationshipIcons
+  ]
+    ? relationshipIcons[
         users.relationshipState.toLowerCase() as keyof typeof relationshipIcons
-      ]) || (
-      <Heart className="h-5 w-5 text-gray-400" />
-    )
+      ]
+    : <Heart className="h-5 w-5 text-gray-400" />;
 
   return (
     <Card>

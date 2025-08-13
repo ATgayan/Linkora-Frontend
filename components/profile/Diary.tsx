@@ -43,10 +43,15 @@ type Props = {
 export default function DiaryPostsCard({ posts = [] }: Props) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [postToUpdate, setPostToUpdate] = useState<Post | null>(null)
   const [newTitle, setNewTitle] = useState("")
   const [newContent, setNewContent] = useState("")
+  const [updateTitle, setUpdateTitle] = useState("")
+  const [updateContent, setUpdateContent] = useState("")
   const [postList, setPostList] = useState<Post[]>(posts)
   const [loading, setLoading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const baseurl = process.env.NEXT_PUBLIC_API_BASE_URL
 
@@ -96,6 +101,7 @@ export default function DiaryPostsCard({ posts = [] }: Props) {
       return
     }
 
+    setIsSaving(true)
     try {
       const auth = getAuth()
       const user = auth.currentUser
@@ -129,6 +135,8 @@ export default function DiaryPostsCard({ posts = [] }: Props) {
       setShowCreateModal(false)
     } catch (error: any) {
       alert(error.message || "Error creating post")
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -163,14 +171,17 @@ export default function DiaryPostsCard({ posts = [] }: Props) {
     }
   }
 
-  const handleUpdatePost = async (post: Post) => {
-    const updatedTitle = prompt("Edit Title:", post.title)
-    if (updatedTitle === null) return // User cancelled
+  const openUpdateModal = (post: Post) => {
+    setPostToUpdate(post)
+    setUpdateTitle(post.title)
+    setUpdateContent(post.content)
+    setShowUpdateModal(true)
+  }
 
-    const updatedContent = prompt("Edit Content:", post.content)
-    if (updatedContent === null) return
+  const handleUpdatePost = async () => {
+    if (!postToUpdate) return
 
-    if (!updatedTitle.trim() || !updatedContent.trim()) {
+    if (!updateTitle.trim() || !updateContent.trim()) {
       alert("Title and Content cannot be empty.")
       return
     }
@@ -184,7 +195,7 @@ export default function DiaryPostsCard({ posts = [] }: Props) {
       }
       const token = await user.getIdToken()
 
-      const response = await fetch(`${baseurl}/feed/posts-update/${post.id}`, {
+      const response = await fetch(`${baseurl}/feed/posts-update/${postToUpdate.id}`, {
         method: "PUT",
         credentials: "include",
         headers: {
@@ -192,8 +203,8 @@ export default function DiaryPostsCard({ posts = [] }: Props) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          title: updatedTitle.trim(),
-          content: updatedContent.trim(),
+          title: updateTitle.trim(),
+          content: updateContent.trim(),
         }),
       })
 
@@ -204,109 +215,129 @@ export default function DiaryPostsCard({ posts = [] }: Props) {
 
       setPostList(
         postList.map(p =>
-          p.id === post.id
-            ? { ...p, title: updatedTitle.trim(), content: updatedContent.trim() }
+          p.id === postToUpdate.id
+            ? { ...p, title: updateTitle.trim(), content: updateContent.trim() }
             : p
         )
       )
+      
+      // Reset update modal state
+      setShowUpdateModal(false)
+      setPostToUpdate(null)
+      setUpdateTitle("")
+      setUpdateContent("")
     } catch (error: any) {
       alert(error.message || "Error updating post")
     }
   }
 
+  const closeUpdateModal = () => {
+    setShowUpdateModal(false)
+    setPostToUpdate(null)
+    setUpdateTitle("")
+    setUpdateContent("")
+  }
+
   return (
     <>
-      <Card className="max-w-6xl mx-auto my-8 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <CardHeader className="flex justify-between items-center px-6 py-4 border-b border-gray-300 dark:border-gray-600">
-          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Life's Interesting Moments
-          </CardTitle>
-          <Button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white"
-          >
-            <PlusIcon className="w-5 h-5" />
-            Create Post
-          </Button>
-        </CardHeader>
+   <div>
+  <style jsx>{`
+    .hide-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;  /* Chrome, Safari and Opera */
+    }
+  `}</style>
 
-        <CardContent className="p-6 m-5 w-[1000px]">
-          {loading ? (
-            <Loader2/>
-          ) : postList.length === 0 ? (
-            <p className="text-center text-gray-400 dark:text-gray-500">No posts to show.</p>
-          ) : (
-            <div
-              className="max-h-[520px] overflow-y-auto pr-4 space-y-4
-              scrollbar-thin scrollbar-thumb-indigo-400 scrollbar-track-gray-200 dark:scrollbar-track-gray-700"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {postList.map(post => (
-                  <Card
-  key={post.id}
-  className="max-w-xl w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 bg-gray-50 dark:bg-gray-800 flex flex-col"
->
-  <CardHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-    <div className="flex flex-col">
-      <CardTitle
-        className="truncate text-xl font-semibold text-indigo-700 dark:text-indigo-300 cursor-pointer hover:underline"
-        onClick={() => setSelectedPost(post)}
-        title={post.title}
-      >
-        {post.title}
+  <Card className="max-w-6xl mx-auto my-8 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+    <CardHeader className="flex justify-between items-center px-6 py-4 border-b border-gray-300 dark:border-gray-600">
+      <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+        Life's Interesting Moments
       </CardTitle>
-      {post.author && (
-        <span className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          By <strong>{post.author}</strong>
-        </span>
+      <Button
+        onClick={() => setShowCreateModal(true)}
+        className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white"
+      >
+        <PlusIcon className="w-5 h-5" />
+        Create Post
+      </Button>
+    </CardHeader>
+
+    <CardContent className="p-6">
+      {loading ? (
+        <Loader2 />
+      ) : postList.length === 0 ? (
+        <p className="text-center text-gray-400 dark:text-gray-500">No posts to show.</p>
+      ) : (
+        <div className="max-h-[520px] overflow-y-auto space-y-4 hide-scrollbar">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {postList.map((post) => (
+              <Card
+                key={post.id}
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 bg-gray-50 dark:bg-gray-800 flex flex-col"
+              >
+                <CardHeader className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex flex-col">
+                    <CardTitle
+                      className="truncate text-lg font-semibold text-black dark:text-indigo-300 cursor-pointer hover:underline"
+                      onClick={() => setSelectedPost(post)}
+                      title={post.title}
+                    >
+                      {post.title}
+                    </CardTitle>
+                    {post.author && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        By <strong>{post.author}</strong>
+                      </span>
+                    )}
+                  </div>
+                </CardHeader>
+
+                <CardContent className="flex-grow px-4 py-3">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-4 whitespace-pre-line leading-relaxed break-words">
+                    {post.content}
+                  </p>
+                </CardContent>
+
+                <div className="flex justify-end gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                  {/* Read */}
+                  <button
+                    onClick={() => setSelectedPost(post)}
+                    className="p-1.5 rounded-full bg-transparent hover:bg-red-100 dark:hover:bg-red-900 transition"
+                    aria-label="Read Post"
+                  >
+                    <EyeIcon className="w-4 h-4 text-blue-500" />
+                  </button>
+
+                  {/* Update */}
+                  <button
+                    onClick={() => openUpdateModal(post)}
+                    className="p-1.5 rounded-full bg-transparent hover:bg-amber-100 dark:hover:bg-amber-900 transition"
+                    aria-label="Update Post"
+                  >
+                    <PencilIcon className="w-4 h-4 text-green-500" />
+                  </button>
+
+                  {/* Delete */}
+                  <button
+                    onClick={() => handleDeletePost(post.id)}
+                    className="p-1.5 rounded-full bg-transparent hover:bg-red-100 dark:hover:bg-red-900 transition"
+                    aria-label="Delete Post"
+                  >
+                    <TrashIcon className="w-4 h-4 text-red-600" />
+                  </button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
       )}
-    </div>
-    
-  </CardHeader>
+    </CardContent>
+  </Card>
+</div>
 
-  <CardContent className="flex-grow px-6 py-4">
-    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-5 whitespace-pre-line leading-relaxed break-words">
-      {post.content}
-    </p>
-  </CardContent>
-
-  <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-    <Button
-      variant="outline"
-      size="sm"
-      className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900"
-      onClick={() => setSelectedPost(post)}
-      aria-label="Read Post"
-    >
-      <EyeIcon className="w-4 h-4" /> Read
-    </Button>
-    <Button
-      variant="outline"
-      size="sm"
-      className="flex items-center gap-1 text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 hover:bg-green-50 dark:hover:bg-green-900"
-      onClick={() => handleUpdatePost(post)}
-      aria-label="Update Post"
-    >
-      <PencilIcon className="w-4 h-4" /> Update
-    </Button>
-    <Button
-      variant="destructive"
-      size="sm"
-      className="flex items-center gap-1"
-      onClick={() => handleDeletePost(post.id)}
-      aria-label="Delete Post"
-    >
-      <TrashIcon className="w-4 h-4" /> Delete
-    </Button>
-  </div>
-</Card>
-
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Popup Modal for Reading Post */}
       <Dialog
@@ -338,7 +369,6 @@ export default function DiaryPostsCard({ posts = [] }: Props) {
       <Dialog
         open={showCreateModal}
         onOpenChange={() => setShowCreateModal(false)}
-        
       >
         <DialogContent className="max-w-lg rounded-xl bg-gradient-to-tr from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-900 dark:via-purple-900 dark:to-pink-900 shadow-2xl p-8">
           <DialogHeader>
@@ -370,9 +400,60 @@ export default function DiaryPostsCard({ posts = [] }: Props) {
               </Button>
               <Button
                 onClick={handleCreatePost}
+                disabled={isSaving}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
               >
-                Save <PlusIcon className="w-5 h-5" />
+                {isSaving ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    Save <PlusIcon className="w-5 h-5" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Post Modal */}
+      <Dialog
+        open={showUpdateModal}
+        onOpenChange={closeUpdateModal}
+      >
+        <DialogContent className="max-w-lg rounded-xl bg-gradient-to-tr from-blue-50 via-blue-50 to-teal-50 dark:from-blue-900 dark:via-emerald-900 dark:to-teal-900 shadow-2xl p-8">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold mb-6 text-black-900 dark:text-black-300">
+              Update Post
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <Input
+              placeholder="Title"
+              value={updateTitle}
+              onChange={e => setUpdateTitle(e.target.value)}
+              className="text-lg font-semibold text-black-900 dark:text-black-200"
+            />
+            <Textarea
+              placeholder="Content"
+              rows={6}
+              value={updateContent}
+              onChange={e => setUpdateContent(e.target.value)}
+              className="text-black-900 dark:text-black-200"
+            />
+            <div className="flex justify-end gap-4">
+              <Button
+                variant="outline"
+                onClick={closeUpdateModal}
+                className="text-black-700 dark:text-black-400 border-black-700 dark:border-black-400 hover:bg-blue-100 dark:hover:bg-blue-800"
+              >
+                Cancel <XMarkIcon className="w-4 h-4 ml-1 inline" />
+              </Button>
+              <Button
+                onClick={handleUpdatePost}
+                className="bg-blue-600 hover:bg-black-700 text-white flex items-center gap-2"
+              >
+                Update <PencilIcon className="w-5 h-5" />
               </Button>
             </div>
           </div>

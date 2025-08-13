@@ -10,6 +10,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { getAuth } from "firebase/auth";
 import { EyeIcon } from "@heroicons/react/24/outline";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 type Post = {
   createdAt: string | undefined;
@@ -20,13 +27,14 @@ type Post = {
 };
 
 type Props = {
-  userId: string; // Target user's ID to fetch posts for
+  userId: string;
 };
 
 export default function DiaryPostsCard({ userId }: Props) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [postList, setPostList] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const baseurl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -43,8 +51,6 @@ export default function DiaryPostsCard({ userId }: Props) {
           return;
         }
 
-
-        // Updated API call to match backend
         const response = await fetch(`${baseurl}/feed/friends-posts/${userId}`, {
           method: "GET",
           credentials: "include",
@@ -59,10 +65,7 @@ export default function DiaryPostsCard({ userId }: Props) {
         }
 
         const posts: Post[] = await response.json();
-       
-             setPostList(posts);
-        
-       
+        setPostList(posts);
       } catch (error: any) {
         alert(error.message || "Error loading posts");
       } finally {
@@ -72,6 +75,11 @@ export default function DiaryPostsCard({ userId }: Props) {
 
     if (userId) fetchPosts();
   }, [baseurl, userId]);
+
+  const openPost = (post: Post) => {
+    setSelectedPost(post);
+    setIsDialogOpen(true);
+  };
 
   return (
     <>
@@ -90,7 +98,7 @@ export default function DiaryPostsCard({ userId }: Props) {
             <div className="flex flex-col">
               <CardTitle
                 className="truncate text-xl font-semibold text-indigo-700 dark:text-indigo-300 cursor-pointer hover:underline"
-                onClick={() => setSelectedPost(post)}
+                onClick={() => openPost(post)}
                 title={post.title}
               >
                 {post.title}
@@ -123,7 +131,7 @@ export default function DiaryPostsCard({ userId }: Props) {
               variant="outline"
               size="sm"
               className="flex items-center gap-1 h-8 text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900"
-              onClick={() => setSelectedPost(post)}
+              onClick={() => openPost(post)}
               aria-label="Read Post"
             >
               <EyeIcon className="w-4 h-4" /> Read
@@ -131,6 +139,26 @@ export default function DiaryPostsCard({ userId }: Props) {
           </div>
         </Card>
       ))}
+
+      {/* Popup Dialog for Reading Post */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{selectedPost?.title}</DialogTitle>
+            {selectedPost?.author && (
+              <DialogDescription>
+                By <strong>{selectedPost.author}</strong> •{" "}
+                {selectedPost?.createdAt
+                  ? new Date(selectedPost.createdAt).toLocaleString()
+                  : "Unknown date"}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          <div className="mt-4 text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+            {selectedPost?.content}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
