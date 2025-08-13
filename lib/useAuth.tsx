@@ -165,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         if (user) {
           await refreshUserToken(user);
+          router.push(`/profile/${user?.uid}`);
         } else {
           // User signed out - redirect to auth page
           router.push('/auth');
