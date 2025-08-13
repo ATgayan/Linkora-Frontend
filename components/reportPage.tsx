@@ -35,7 +35,7 @@ export default function ReportProfile({ reportedUserId , reporterId ,reportedUse
   }
 
   try {
-    const res = await fetch(`${baseurl}/admin/report-user`, {
+    const res = await fetch(`${baseurl}/profile/report-user`, {
       method: "PUT",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
