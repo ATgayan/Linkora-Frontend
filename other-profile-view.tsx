@@ -27,6 +27,7 @@ import DiaryPostsCard from "./components/profile/Frinds_Diary"
 
 import ReportProfile from "./components/reportPage"
 import { useAuth } from "@/lib/useAuth"
+import router from "next/router"
 
 // User model interface (matching your User model)
 interface UserModel {
@@ -230,7 +231,7 @@ export default function OtherProfileView({ uid }: OtherProfileViewProps) {
  
 
   const handleMessage = () => {
-    console.log("Navigate to messages with this user")
+    router.push(`/messages/${authUser?.uid}`)
   }
 
   if (isLoading) {
