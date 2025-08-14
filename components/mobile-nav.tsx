@@ -18,35 +18,31 @@ export function MobileNav() {
   const pathname = usePathname()
 
   const navItems = [
-    { href: "/search", label: "Discover", icon: Search },
-    { href: "/collab", label: "Collaborations", icon: Users },
-    { href: "/messages", label: "Messages", icon: MessageSquare },
-    { href: "/profile", label: "Profile", icon: User },
-    { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/discover", label: "Discover", icon: Search },
+    { href: `/messages/${null}`, label: "Messages", icon: MessageSquare },
   ]
 
-  const { user,logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
-      try {
-        await logout();
-        router.push("/auth"); // Redirect after logout
-      } catch (err) {
-        console.error("Error logging out:", err);
-      }
-    };
+    try {
+      await logout();
+      router.push("/auth"); // Redirect after logout
+    } catch (err) {
+      console.error("Error logging out:", err);
+    }
+  };
 
   return (
     <div className="flex w-full items-center justify-between md:hidden">
-      <Link href={user ? `/profile/${user.uid}` : "/profile"} className="flex items-center space-x-2">
+      <Link href={`/profile/${user?.uid ?? ""}`} className="flex items-center space-x-2">
         <span className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-xl font-bold text-transparent">
           Linkora
         </span>
       </Link>
       <div className="flex items-center gap-2">
         <NotificationDropdown />
-        <ModeToggle />
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -71,8 +67,25 @@ export function MobileNav() {
                 </Link>
               ))}
               <Separator />
+              <Link
+                href="/"
+                className="flex items-center gap-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary"
+                onClick={() => setOpen(false)}
+              >
+                <User className="h-4 w-4" />
+                View Profile
+              </Link>
+              <Link
+                href="/settings"
+                className="flex items-center gap-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary"
+                onClick={() => setOpen(false)}
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
+              <Separator />
               <div
-                className="flex items-center gap-3 py-2 text-sm font-medium text-red-500"
+                className="flex items-center gap-3 py-2 text-sm font-medium text-red-500 cursor-pointer"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
@@ -81,6 +94,7 @@ export function MobileNav() {
             </div>
           </SheetContent>
         </Sheet>
+        <ModeToggle />
       </div>
     </div>
   )
